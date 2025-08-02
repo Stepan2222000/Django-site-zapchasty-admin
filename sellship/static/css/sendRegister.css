@@ -1,0 +1,18 @@
+body {
+    background-color: #1D1D1D;
+}
+
+#purchase-form input:invalid {
+    border-color: #ff4444;
+    box-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+    background-color: #fff9f9;
+}
+
+#purchase-form input:valid {
+    border-color: #23d32c;
+}
+
+.hide-form {
+    display: none;
+}
+

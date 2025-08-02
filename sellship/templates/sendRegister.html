@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sendRegister</title>
+    <link rel="stylesheet" href="/static/css/sendRegister.css">
+    <script src="/static/js/sendRegister.js" defer></script>
+</head>
+<body>
+<button id="ebay-button" disabled>Ebay</button>
+<button id="other-site-button">Other Site</button>
+<div id="form-container">
+    <form id="purchase-ebay-form">
+        <input type="number" name="announcemenet-number" placeholder="Номер объявления" maxlength="12" minlength="12">
+
+<!--        Умный поиск по запросу-->
+                <div style="display: inline-block">
+                    <input type="text" id="autoArticleComplete" placeholder="Начни вводить артикул..." autocomplete="off" name="article" />
+                    <div id="autoArticleComplete-list" style="border: 1px solid #ccc; max-height: 150px; overflow-y: auto; position: absolute; background: white; display: none;"></div>
+                    </div>
+<!--        Умный поиск по запросу-->
+
+        <input type="text" name="country" placeholder="Страна" value="США" >
+        <input type="number" name="max_price" placeholder="Максимальная цена покупки" >
+        <p>Выберите статус</p>
+        <button type="button" class="status-button" data-option="form-buy">Куплено</button>
+        <button type="button" class="status-button" data-option="form-massage">Написал</button>
+        <button type="button" class="status-button" data-option="form-offer">Оффер</button>
+        <!--внутри purchase-ebay-form после кнопок-->
+        <div id="form-buy" class="status-form hide-form">
+            <p>Форма для статуса "Куплено"</p>
+            <input type="text" name="trak" placeholder="трек номер" maxlength="100" minlength="10">
+            <input type="date" name="date_arrive" placeholder="дата прихода на склад">
+            <input type="number" name="" placeholder="цена покупки с учетом доставки">
+
+            <select name="shipper">
+                {% for value, label in shipper_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+<!--            <input type="text" name="" placeholder="к кому отправлено">-->
+
+
+            <input type="text" name="" placeholder="имя продавца">
+
+            <select name="type_delivery">
+                <option value="AIR" selected>AIR</option>
+                <option value="WATER">WATER</option>
+            </select>
+
+<!--            <input type="text" name="" placeholder="тип доставки">-->
+            <select name="account_ebay">
+                    {% for value, label in account_ebay_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+<!--            <input type="text" name="" placeholder="аккаунт ебей">-->
+
+            <input type="text" name="" placeholder="доп затраты" value="0">
+            <input type="text" name="" placeholder="ссылка на покупку">
+
+            <select name="currency">
+                <option value="USD" selected>USD</option>
+                <option value="EURO">EURO</option>
+            </select>
+
+<!--            <input type="text" name="" placeholder="валюта">-->
+            <input type="text" name="" placeholder="поле для ввода доп комментария">
+        </div>
+
+        <div id="form-massage" class="status-form hide-form">
+            <p>Форма для статуса "Написал"</p>
+        </div>
+
+        <div id="form-offer" class="status-form hide-form">
+            <p>Форма для статуса "Оффер"</p>
+        </div>
+    </form>
+    <form id="purchase-other-form" class="hide-form">
+        <p>ПРИВЕТ КАК ДЕЛА</p>
+    </form>
+</div>
+</body>
+</html>
