@@ -141,7 +141,7 @@ class EbayShippingInfo(models.Model):
      shipper = models.CharField(max_length=100, choices=ShipperChoices.choices, null=False, db_column="отправщик")
      track_number = models.CharField(max_length=150, db_column="трек", null=True, blank=True)
      date_arrive = models.DateField(db_column="дата_прихода_на_склад", null=True, blank=True)
-     country = models.CharField(max_length=100, choices=CountryChoices.choices, null=False, db_column="страна_склада")
+     country = models.CharField(max_length=100, choices=CountryChoices.choices, null=False, blank=False, db_column="страна_склада")
      comments = models.TextField(db_column="коментарий")
      order_link = models.URLField(max_length=256, db_column="ссылка_заказ")
      rf_send = models.BooleanField(db_column="рф_отправленно")
