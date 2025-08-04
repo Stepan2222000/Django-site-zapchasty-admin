@@ -1,11 +1,12 @@
 from django import forms
-from .models import EbayShippingInfo, CountryChoices
+from .models import EbayShippingInfo, CountryChoices, Item
+from .models.shipping_info import ShipperChoices, ShippingType, AccountEbayChoices
 
 
 class EbayShippingInfoForm(forms.ModelForm):
-    country = forms.ChoiceField(
-        choices=CountryChoices.choices,
-        required=True
+    smart = forms.ModelChoiceField(
+        queryset=Item.objects.all(),
+        widget=forms.HiddenInput()
     )
 
     date_arrive = forms.DateField(
@@ -18,63 +19,64 @@ class EbayShippingInfoForm(forms.ModelForm):
         required=False
     )
 
-    final_price = forms.DateField(
-        widget=forms.DateInput(
+    final_price = forms.DecimalField(
+        widget=forms.NumberInput(
             attrs={
-                'type': 'date',
-                'placeholder': 'цена покупки с учетом доставки'
+                'type': 'number',
+                'placeholder': 'цена покупки с учетом доставки',
+                'step': '0.01'
             }
         ),
         required=False
     )
 
-    class Meta:
-        model = EbayShippingInfo
-        fields = '__all__'
+    seller_name = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                'type': 'text',
+                'placeholder': 'имя продавца',
+            }
+        )
+    )
 
-        # widgets = {
-        #     'last_updated_status': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        #     'date_arrive': forms.DateInput(attrs={'type': 'date'}),
-        #     'date_list_create': forms.DateInput(attrs={'type': 'date'}),
-        #     'comments': forms.Textarea(attrs={'rows': 3}),
-        # }
-
-        widgets = {
-            'number_announcement': forms.NumberInput(attrs={
+    number_announcement = forms.IntegerField(
+        widget=forms.NumberInput(
+            attrs={
+                'type': 'number',
                 'placeholder': 'Введите номер объявления',
-                'type': "number"
-            }),
-            'max_price': forms.NumberInput(attrs={
+                'min': '100000000000',
+                'max': '999999999999'
+            }
+        )
+    )
+
+    max_price = forms.DecimalField(
+        widget=forms.NumberInput(
+            attrs={
+                'type': 'number',
                 'placeholder': 'Максимальная цена покупки',
-                'type': "number"
-            }),
-            'track_number': forms.TextInput(attrs={
+                'step': '0.01'
+            }
+        )
+    )
+
+    track_number = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
                 'placeholder': 'трек номер',
                 'minlength': '5'
-            }),
-        }
+            }
+        )
+    )
 
-        labels = {
-            'number_announcement': 'Номер объявления',
-            'smart': 'Товар (smart)',
-            'max_price': 'Максимальная цена',
-            'account_ebay': 'Аккаунт eBay',
-            'status': 'Статус',
-            'last_updated_status': 'Последнее обновление статуса',
-            'seller_name': 'Имя продавца',
-            'shipping_type': 'Тип доставки',
-            'final_price': 'Финальная цена',
-            'overhead': 'Дополнительные затраты',
-            'shipper': 'Отправщик',
-            'track_number': 'Трек-номер',
-            'date_arrive': 'Дата прихода на склад',
-            'country': 'Страна склада',
-            'comments': 'Комментарий',
-            'order_link': 'Ссылка на заказ',
-            'rf_send': 'Отправлено в РФ',
-            'date_list_create': 'Дата создания листа',
-        }
+    comments = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'rows': 4,
+            'cols': 40
+        })
+    )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['country'].initial = 'США'
+
+    class Meta:
+        model = EbayShippingInfo
+        fields = "__all__"

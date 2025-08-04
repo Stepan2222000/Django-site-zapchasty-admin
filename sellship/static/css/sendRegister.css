@@ -1,5 +1,8 @@
 body {
     background-color: #1D1D1D;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 20px;
 }
 
 #purchase-form input:invalid {
@@ -15,4 +18,466 @@ body {
 .hide-form {
     display: none;
 }
+
+/* Стили для сообщений Django */
+.messages {
+    margin-bottom: 20px;
+}
+
+.message {
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.message.success {
+    background-color: #4CAF50;
+    color: white;
+    border: 1px solid #45a049;
+}
+
+.message.error {
+    background-color: #f44336;
+    color: white;
+    border: 1px solid #da190b;
+}
+
+.message.warning {
+    background-color: #ff9800;
+    color: white;
+    border: 1px solid #e68900;
+}
+
+.message.info {
+    background-color: #2196F3;
+    color: white;
+    border: 1px solid #0b7dda;
+}
+
+/* Стили для формы */
+#form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+form {
+    background-color: #2D2D2D;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background-color: #3D3D3D;
+    color: white;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+/* Стили для кнопок статуса */
+.status-button {
+    background-color: #2196F3;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.status-button:hover {
+    background-color: #0b7dda;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.status-button.active {
+    background-color: #4CAF50;
+    border-color: #45a049;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+    transform: scale(1.05);
+}
+
+.status-button.active:hover {
+    background-color: #45a049;
+}
+
+/* Контейнер для кнопок статуса */
+.status-buttons-container {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 15px;
+    background-color: #3D3D3D;
+    border-radius: 8px;
+    border: 1px solid #555;
+}
+
+.status-form {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #3D3D3D;
+    border-radius: 5px;
+    border-left: 4px solid #4CAF50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Стили для ошибок формы */
+.errorlist {
+    color: #ff4444;
+    font-size: 12px;
+    margin: 5px 0;
+    list-style: none;
+    padding: 0;
+}
+
+/* Стили для кнопок переключения */
+#ebay-button, #other-site-button {
+    background-color: #2196F3;
+    margin-right: 10px;
+}
+
+#ebay-button:hover, #other-site-button:hover {
+    background-color: #0b7dda;
+}
+
+#ebay-button:disabled {
+    background-color: #666;
+}
+
+/* Стили для кнопки отправки */
+#purchase-ebay-form button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 20px 0 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: none; /* Скрыта по умолчанию */
+}
+
+#purchase-ebay-form button[type="submit"]:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#purchase-ebay-form button[type="submit"]:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Стили для автодополнения артикула */
+#autoArticleComplete-list {
+    border: 1px solid #555;
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: absolute;
+    background: #2D2D2D;
+    display: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    width: 100%;
+    margin-top: 2px;
+    top: 100%;
+    left: 0;
+}
+
+#autoArticleComplete-list div {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #444;
+    color: white;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    overflow: hidden;
+}
+
+#autoArticleComplete-list div:last-child {
+    border-bottom: none;
+}
+
+#autoArticleComplete-list div:hover {
+    background-color: #4CAF50;
+    color: white;
+    transform: translateX(5px);
+    overflow: hidden;
+}
+
+#autoArticleComplete-list div.active {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+/* Стили для контейнера с автодополнением */
+.auto-complete-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    margin: 10px 0;
+}
+
+/* Стили для поля ввода артикула */
+#autoArticleComplete {
+    background-color: #3D3D3D;
+    border: 1px solid #555;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#autoArticleComplete:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+    outline: none;
+}
+
+#autoArticleComplete::placeholder {
+    color: #aaa;
+}
+
+/* Специальные стили для поля даты с плавающим label */
+.floating-label-container input[type="date"] {
+    color: white;
+    background-color: #3D3D3D;
+    border: 1px solid #555;
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.floating-label-container input[type="date"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+/* Стили для календарного индикатора */
+.floating-label-container input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    filter: invert(1);
+}
+
+.floating-label-container input[type="date"]::-webkit-datetime-edit {
+    color: white;
+}
+
+/* Стили для Firefox */
+@supports (-moz-appearance:none) {
+    .floating-label-container input[type="date"] {
+        color: white;
+    }
+}
+
+/* Стили для текстовых элементов в автодополнении */
+.article-text {
+    font-weight: 500;
+    color: #fff;
+}
+
+.article-id {
+    font-size: 12px;
+    color: #aaa;
+    font-weight: normal;
+}
+
+/* Анимация появления списка */
+#autoArticleComplete-list {
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стилизация скроллбара для списка автодополнения */
+#autoArticleComplete-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+#autoArticleComplete-list::-webkit-scrollbar-track {
+    background: #3D3D3D;
+    border-radius: 4px;
+}
+
+#autoArticleComplete-list::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+#autoArticleComplete-list::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+/* Отключение стрелок вверх/вниз для поля number input */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Стили для плавающего label */
+.floating-label-container {
+    position: relative;
+    width: 100%;
+    margin: 10px 0 5px 0; /* top, right, bottom, left */
+}
+
+.floating-label-container input,
+.floating-label-container select,
+.floating-label-container textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background-color: #3D3D3D;
+    color: white;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.floating-label-container input:focus,
+.floating-label-container select:focus,
+.floating-label-container textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+.floating-label {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    font-size: 16px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    background-color: #3D3D3D;
+    padding: 0 5px;
+    border-radius: 3px;
+    z-index: 1;
+}
+
+/* Состояния для плавающего label */
+.floating-label-container input:focus + .floating-label,
+.floating-label-container select:focus + .floating-label,
+.floating-label-container textarea:focus + .floating-label,
+.floating-label-container.has-value .floating-label,
+.floating-label-container.focused .floating-label {
+    top: 0;
+    transform: translateY(-50%) scale(0.85);
+    color: #4CAF50;
+    font-weight: bold;
+    background-color: #2D2D2D;
+    font-size: 14px;
+}
+
+/* Специальные стили для select элементов */
+.floating-label-container select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+/* Стили для placeholder в input полях */
+.floating-label-container input::placeholder {
+    color: transparent;
+}
+
+.floating-label-container input:focus::placeholder {
+    color: transparent;
+}
+
+/* Анимация для плавающего label */
+@keyframes floatUp {
+    from {
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: #aaa;
+    }
+    to {
+        top: 0;
+        transform: translateY(-50%) scale(0.85);
+        font-size: 14px;
+        color: #4CAF50;
+    }
+}
+
+@keyframes floatDown {
+    from {
+        top: 0;
+        transform: translateY(-50%) scale(0.85);
+        font-size: 14px;
+        color: #4CAF50;
+    }
+    to {
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: #aaa;
+    }
+}
+
 

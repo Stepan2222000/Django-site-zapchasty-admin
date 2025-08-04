@@ -8,6 +8,9 @@ const forms = {
     otherSite: document.querySelector('#purchase-other-form')
 }
 
+// Кнопка отправки
+const submitButton = document.querySelector('#purchase-ebay-form button[type="submit"]');
+
 
 
 function switchFormSite(formType) {
@@ -50,7 +53,18 @@ if (buttons.otherSite) {
 
 const STATUS_TYPES = ["form-buy", "form-massage", "form-offer"];
 
-function switchFormStatus(statusType) {
+function switchFormStatus(statusType, updateHash = true) {
+    // Убираем активный класс со всех кнопок статуса
+    document.querySelectorAll(".status-button").forEach(button => {
+        button.classList.remove("active");
+    });
+    
+    // Добавляем активный класс к выбранной кнопке
+    const activeButton = document.querySelector(`[data-option="${statusType}"]`);
+    if (activeButton) {
+        activeButton.classList.add("active");
+    }
+    
     // Скрываем все формы
     STATUS_TYPES.forEach(type => {
         const form = document.getElementById(type);
@@ -60,14 +74,73 @@ function switchFormStatus(statusType) {
     // Показываем нужную форму
     const selectedForm = document.getElementById(statusType);
     if (selectedForm) selectedForm.classList.remove("hide-form");
+    
+    // Показываем кнопку отправки только если статус выбран
+    if (submitButton) {
+        submitButton.style.display = 'block';
+    }
+    
+    // Обновляем URL с хэшем только если это не восстановление из URL
+    if (updateHash) {
+        updateURLHash(statusType);
+    }
 }
+
+// Функция для обновления URL хэша
+function updateURLHash(action) {
+    const currentHash = window.location.hash;
+    const newHash = `#action=${action}`;
+    
+    if (currentHash !== newHash) {
+        window.location.hash = newHash;
+    }
+}
+
+// Функция для получения действия из URL хэша
+function getActionFromHash() {
+    const hash = window.location.hash;
+    const match = hash.match(/#action=([^&]+)/);
+    return match ? match[1] : null;
+}
+
+// Функция для восстановления состояния из URL
+function restoreStateFromURL() {
+    const action = getActionFromHash();
+    if (action && STATUS_TYPES.includes(action)) {
+        switchFormStatus(action, false); // Не обновляем хэш при восстановлении
+    }
+}
+
+// Функция для скрытия кнопки отправки
+function hideSubmitButton() {
+    if (submitButton) {
+        submitButton.style.display = 'none';
+    }
+}
+
+// Скрываем кнопку отправки при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    hideSubmitButton();
+    
+    // Инициализация плавающих labels
+    initFloatingLabels();
+    
+        // Восстанавливаем состояние из URL
+    restoreStateFromURL();
+    
+    // Обработчик изменения хэша в URL
+    window.addEventListener('hashchange', function() {
+        restoreStateFromURL();
+    });
+});
+
 
 
 
 document.querySelectorAll(".status-button").forEach(button => {
     button.addEventListener("click", () => {
         const selected = button.getAttribute("data-option");
-        if (selected) switchFormStatus(selected);
+        if (selected) switchFormStatus(selected, true); // Обновляем хэш при клике
     });
 });
 
@@ -85,40 +158,60 @@ input.addEventListener('input', function() {
 
   // Запрос к API с поисковым значением
   fetch(`/api/articles/?q=${encodeURIComponent(val)}`)
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
     .then(data => {
       // data — ожидается массив строк или объектов с нужным свойством для отображения
       renderList(data);
     })
-    .catch(() => closeList());
+    .catch(error => {
+      closeList();
+    });
 });
 
 function renderList(items) {
   closeList();
   if (!items.length) return;
+  
   list.style.display = 'block';
+  list.style.visibility = 'visible';
 
   items.forEach((item, i) => {
     const div = document.createElement('div');
-    div.style.padding = '5px';
-    div.style.cursor = 'pointer';
-
+    
+    // Создаем структуру для отображения данных
     if (typeof item === 'string') {
-      div.textContent = item;
+      div.innerHTML = `<span class="article-text">${item}</span>`;
     } else if (item.similar_article) {
-      div.textContent = `${item.similar_article} | ${item.id}`;
+      div.innerHTML = `
+        <span class="article-text">${item.similar_article}</span>
+        <span class="article-id">ID: ${item.id}</span>
+      `;
     } else {
-      div.textContent = `${item.id}`;
+      div.innerHTML = `
+        <span class="article-text">Артикул</span>
+        <span class="article-id">ID: ${item.id}</span>
+      `;
     }
-
 
     if (typeof item !== 'string') {
       div.dataset.id = item.id;
     }
 
     div.addEventListener('click', () => {
-      input.value = div.dataset.id;
+      input.value = div.dataset.id || item;
       closeList();
+    });
+
+    div.addEventListener('mouseenter', () => {
+      // Убираем активный класс со всех элементов
+      list.querySelectorAll('div').forEach(el => el.classList.remove('active'));
+      // Добавляем активный класс к текущему элементу
+      div.classList.add('active');
     });
 
     list.appendChild(div);
@@ -129,6 +222,7 @@ function renderList(items) {
 function closeList() {
   list.innerHTML = '';
   list.style.display = 'none';
+  list.style.visibility = 'hidden';
   currentFocus = -1;
 }
 
@@ -172,3 +266,76 @@ document.addEventListener('click', function(e) {
 });
 
 //-----------
+
+// Функция для инициализации плавающих labels
+function initFloatingLabels() {
+    const floatingContainers = document.querySelectorAll('.floating-label-container');
+    
+    floatingContainers.forEach(container => {
+        const input = container.querySelector('input, select, textarea');
+        const label = container.querySelector('.floating-label');
+        
+        if (!input || !label) return;
+        
+        // Проверяем, есть ли уже значение при загрузке
+        if (input.value && input.value !== '') {
+            container.classList.add('has-value');
+        }
+        
+        // Обработчик изменения значения
+        input.addEventListener('change', function() {
+            if (this.value && this.value !== '') {
+                container.classList.add('has-value');
+            } else {
+                container.classList.remove('has-value');
+            }
+        });
+        
+        // Обработчик получения фокуса
+        input.addEventListener('focus', function() {
+            container.classList.add('focused');
+        });
+        
+        // Обработчик потери фокуса
+        input.addEventListener('blur', function() {
+            container.classList.remove('focused');
+            if (!this.value || this.value === '') {
+                container.classList.remove('has-value');
+            }
+        });
+        
+        // Для select элементов также обрабатываем событие input
+        if (input.tagName === 'SELECT') {
+            input.addEventListener('input', function() {
+                if (this.value && this.value !== '') {
+                    container.classList.add('has-value');
+                } else {
+                    container.classList.remove('has-value');
+                }
+            });
+        }
+        
+        // Для input элементов также обрабатываем событие input
+        if (input.tagName === 'INPUT') {
+            input.addEventListener('input', function() {
+                if (this.value && this.value !== '') {
+                    container.classList.add('has-value');
+                } else {
+                    container.classList.remove('has-value');
+                }
+            });
+            
+            // Специальная обработка для полей даты
+            if (input.type === 'date') {
+                input.addEventListener('change', function() {
+                    if (this.value && this.value !== '') {
+                        container.classList.add('has-value');
+                    } else {
+                        container.classList.remove('has-value');
+                    }
+                });
+            }
+        }
+    });
+}
+

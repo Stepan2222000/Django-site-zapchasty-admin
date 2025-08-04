@@ -9,12 +9,15 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()   # Загрузка .env файла
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -78,12 +81,17 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+DATABASE_NAME = os.getenv('DATABASE_NAME')      # Берем их из .env файла
+DATABASE_USER = os.getenv('DATABASE_USER')
+DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sellship',       # ← Название базы данных
-        'USER': 'postgres',       # ← Имя пользователя PostgreSQL
-        'PASSWORD': 'root',        # ← Пароль
+        'NAME': DATABASE_NAME,       # ← Название базы данных
+        'USER': DATABASE_USER,       # ← Имя пользователя PostgreSQL
+        'PASSWORD': DATABASE_PASSWORD,        # ← Пароль
         'HOST': 'localhost',                # ← Или IP-адрес (например, '127.0.0.1')
         'PORT': '5432',                     # ← Стандартный порт PostgreSQL
     }
