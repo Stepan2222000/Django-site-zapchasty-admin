@@ -339,3 +339,42 @@ function initFloatingLabels() {
     });
 }
 
+// Кастомная валидация для полей, Regex береться из формочки Django и подставляеться тут
+document.addEventListener('DOMContentLoaded', function () {
+    const inputs = document.querySelectorAll('input[data-pattern]');
+
+    inputs.forEach(input => {
+        const fullPattern = input.dataset.pattern;  // например, '^[0-9]{12}$'
+
+        // Извлечь длину из {N}
+        const lengthMatch = fullPattern.match(/\{(\d+)\}/);
+        const maxLength = lengthMatch ? parseInt(lengthMatch[1], 10) : 1000;
+
+        // Извлечь допустимый набор символов из паттерна (пример для [0-9])
+        // Ищем [..] внутри паттерна
+        const charClassMatch = fullPattern.match(/\[([^\]]+)\]/);
+        // Если нашли, берем содержимое, иначе пустая строка
+        const allowedChars = charClassMatch ? charClassMatch[1] : '';
+
+        // Создаем регулярку для одного символа на основе allowedChars
+        const allowedCharPattern = new RegExp('[' + allowedChars + ']');
+
+        input.addEventListener('input', function () {
+            let clean = '';
+            for (let i = 0; i < this.value.length; i++) {
+                if (allowedCharPattern.test(this.value[i])) {
+                    clean += this.value[i];
+                }
+                if (clean.length >= maxLength) break;
+            }
+            if (this.value !== clean) {
+                this.value = clean;
+            }
+        });
+    });
+});
+
+
+
+
+

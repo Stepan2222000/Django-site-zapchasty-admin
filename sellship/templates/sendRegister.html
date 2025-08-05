@@ -8,8 +8,12 @@
     <script src="/static/js/sendRegister.js" defer></script>
 </head>
 <body>
-<button id="ebay-button" disabled>Ebay</button>
-<button id="other-site-button">Other Site</button>
+
+<div class="marketSelectBlock">
+    <button id="ebay-button" disabled>Ebay</button>
+    <button id="other-site-button">Other Site</button>
+</div>
+
 
 <!-- Отображение сообщений Django -->
 {% if messages %}
@@ -54,6 +58,12 @@
         </div>
         {{ form.max_price.errors }}
 {#        <input type="number" name="max_price" placeholder="Максимальная цена покупки" >#}
+
+        <div class="floating-label-container">
+            {{ form.priority }}
+            <label for="{{ form.priority.id_for_label }}" class="floating-label">Приоритет</label>
+        </div>
+        {{ form.priority.errors }}
 
         <p>Выберите статус</p>
         <div class="status-buttons-container">
