@@ -3,16 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sendRegister</title>
+    <title>{% if is_edit %}Редактирование записи #{{ shipping_item.pk }}{% else %}Регистрация отправки{% endif %}</title>
     <link rel="stylesheet" href="/static/css/sendRegister.css">
     <script src="/static/js/sendRegister.js" defer></script>
 </head>
 <body>
 
+{% if is_edit %}
+<div style="text-align: center; margin: 20px 0;">
+    <h1>Редактирование записи #{{ shipping_item.pk }}</h1>
+    <p>Запись создана: {{ shipping_item.last_updated_status|date:"d.m.Y H:i" }}</p>
+</div>
+{% else %}
 <div class="marketSelectBlock">
     <button id="ebay-button" disabled>Ebay</button>
     <button id="other-site-button">Other Site</button>
 </div>
+{% endif %}
 
 
 <!-- Отображение сообщений Django -->
@@ -27,7 +34,7 @@
 {% endif %}
 
 <div id="form-container">
-    <form id="purchase-ebay-form" action="{% url 'sendRegister' %}" method="POST">
+    <form id="purchase-ebay-form" action="{% if is_edit %}{% url 'edit_shipping_item' shipping_item.pk %}{% else %}{% url 'sendRegister' %}{% endif %}" method="POST">
         {% csrf_token %}
         <input type="hidden" name="status" value="КУПЛЕННО">
         <div class="floating-label-container">
@@ -185,7 +192,10 @@
             <p>Форма для статуса "Оффер"</p>
         </div>
         
-        <button type="submit">Отправить</button>
+        <button type="submit">{% if is_edit %}Обновить{% else %}Отправить{% endif %}</button>
+        {% if is_edit %}
+        <a href="{% url 'items' %}" style="display: inline-block; margin-left: 10px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px;">Отмена</a>
+        {% endif %}
     </form>
     <form id="purchase-other-form" class="hide-form" action="/sellship/sendRegister/other-sites/" method="POST">
         <p>ПРИВЕТ КАК ДЕЛА</p>
@@ -196,6 +206,20 @@
 <script>
   window.location.hash = 'action=form-buy';
   restoreStateFromURL();
+</script>
+{% endif %}
+
+{% if is_edit %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматически выбираем статус "Куплено" для режима редактирования
+    setTimeout(function() {
+        const statusButton = document.querySelector('[data-option="form-buy"]');
+        if (statusButton) {
+            statusButton.click();
+        }
+    }, 100);
+});
 </script>
 {% endif %}
 </body>

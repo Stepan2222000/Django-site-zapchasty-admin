@@ -14,6 +14,27 @@ from sellship.models.shipping_info import EbayShippingInfo, StatusType, CountryC
 
 # Create your views here.
 
+def edit_shipping_item(request, item_id):
+    shipping_item = get_object_or_404(EbayShippingInfo, pk=item_id)
+    
+    if request.method == 'POST':
+        form = EbayShippingInfoForm(request.POST, instance=shipping_item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Запись #{item_id} успешно обновлена!')
+            return redirect('items')
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
+    else:
+        form = EbayShippingInfoForm(instance=shipping_item)
+    
+    context = {
+        'form': form,
+        'shipping_item': shipping_item,
+        'is_edit': True
+    }
+    return render(request, 'sendRegister.html', context)
+
 def delete_shipping_item(request, item_id):
     shipping_item = get_object_or_404(EbayShippingInfo, pk=item_id)
     
