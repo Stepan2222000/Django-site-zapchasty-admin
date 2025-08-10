@@ -22,12 +22,13 @@ class EbayShippingInfoForm(forms.ModelForm):
     final_price = forms.DecimalField(
         widget=forms.NumberInput(
             attrs={
-                'type': 'number',
+                'type': 'text',
                 'placeholder': 'цена покупки с учетом доставки',
-                'step': '0.01'
+                'step': '0.01',
+                'data-pattern': '^[0-9]{12}$'
             }
         ),
-        required=False
+        required=True
     )
 
     seller_name = forms.CharField(
@@ -36,16 +37,18 @@ class EbayShippingInfoForm(forms.ModelForm):
                 'type': 'text',
                 'placeholder': 'имя продавца',
             }
-        )
+        ),
+        required=True
     )
 
     number_announcement = forms.IntegerField(
         widget=forms.NumberInput(
             attrs={
-                'type': 'number',
+                'type': 'text',
                 'placeholder': 'Введите номер объявления',
                 'min': '100000000000',
-                'max': '999999999999'
+                'max': '999999999999',
+                'data-pattern': '^[0-9]{12}$'
             }
         )
     )
@@ -53,11 +56,13 @@ class EbayShippingInfoForm(forms.ModelForm):
     max_price = forms.DecimalField(
         widget=forms.NumberInput(
             attrs={
-                'type': 'number',
+                'type': 'text',
                 'placeholder': 'Максимальная цена покупки',
-                'step': '0.01'
+                'step': '0.01',
+                'data-pattern': '^[0-9]{12}$'
             }
-        )
+        ),
+        required = False
     )
 
     track_number = forms.CharField(
@@ -66,14 +71,27 @@ class EbayShippingInfoForm(forms.ModelForm):
                 'placeholder': 'трек номер',
                 'minlength': '5'
             }
-        )
+        ),
+        required=False
     )
 
     comments = forms.CharField(
         widget=forms.Textarea(attrs={
             'rows': 4,
             'cols': 40
-        })
+        }),
+        required=False
+    )
+
+    overhead = forms.FloatField(
+        widget=forms.NumberInput(
+            attrs={
+                'type': 'text',
+                'placeholder': 'Дополнительные затраты',
+                'step': '0.01',
+                'data-pattern': '^[0-9]{12}$'
+            }
+        )
     )
 
 

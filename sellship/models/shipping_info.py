@@ -45,10 +45,17 @@ class CurrencyChoices(models.TextChoices):
     EURO = 'EURO', 'EURO'
 
 
+class PriorityChoices(models.TextChoices):
+    HIGH = "high", "High"
+    MEDIUM = "medium", "Medium"
+    LOW = "low", "Low"
+
+
 class EbayShippingInfo(models.Model):
     number_announcement = models.BigIntegerField(validators=[MinValueValidator(100000000000), MaxValueValidator(999999999999)], db_column="номер_объявления", verbose_name="Номер объявления")
     smart = models.ForeignKey("Item", on_delete=models.CASCADE, db_column='smart', verbose_name="Товар")
     max_price = models.IntegerField(blank=True, db_column="максимальная_цена", verbose_name="Максимальная цена")
+    priority = models.CharField(default=PriorityChoices.LOW, choices=PriorityChoices.choices, verbose_name="Приоритет", db_column="приоритет")
     account_ebay = models.CharField(choices=AccountEbayChoices.choices, null=False, db_column="аккаунт_ебей", default=AccountEbayChoices.kensinerjack, verbose_name="Аккаунт eBay")
     status = models.CharField(max_length=9, choices=StatusType.choices, null=False, db_column="статус", default=StatusType.PURCHASED, verbose_name="Статус")
     last_updated_status = models.DateTimeField(default=timezone.now, db_column="последнее_обновление_статуса", null=True, blank=True, verbose_name="Последнее обновление статуса")
