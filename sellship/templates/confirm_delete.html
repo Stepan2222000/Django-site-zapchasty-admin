@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подтверждение удаления</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .delete-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .warning-icon {
+            font-size: 48px;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+        .item-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .item-details h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .buttons {
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 30px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="delete-container">
+        <div class="warning-icon">⚠️</div>
+        <h1>Подтверждение удаления</h1>
+        <p>Вы действительно хотите удалить эту запись?</p>
+        
+        <div class="item-details">
+            <h3>Детали записи:</h3>
+            <div class="detail-row">
+                <span class="detail-label">ID:</span>
+                <span>{{ shipping_item.pk }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Номер объявления:</span>
+                <span>{{ shipping_item.number_announcement }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Товар:</span>
+                <span>{{ shipping_item.smart.name|default:shipping_item.smart.id }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Статус:</span>
+                <span>{{ shipping_item.get_status_display }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Страна:</span>
+                <span>{{ shipping_item.get_country_display }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Отправщик:</span>
+                <span>{{ shipping_item.get_shipper_display }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Продавец:</span>
+                <span>{{ shipping_item.seller_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Финальная цена:</span>
+                <span>{{ shipping_item.final_price }}</span>
+            </div>
+        </div>
+        
+        <p><strong>Внимание:</strong> Это действие нельзя отменить!</p>
+        
+        <div class="buttons">
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Да, удалить</button>
+            </form>
+            <a href="{% url 'items' %}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление отправками</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .filters {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .filter-label {
+            font-weight: bold;
+            min-width: 100px;
+        }
+        .filter-btn {
+            padding: 8px 15px;
+            border: 2px solid #333;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            display: inline-block;
+        }
+        .filter-btn.active {
+            background: #333;
+            color: white;
+        }
+        .filter-btn:hover {
+            background: #555;
+            color: white;
+        }
+        .search-row {
+            margin-top: 15px;
+        }
+
+        .table-container {
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .items-table th {
+            background: #f0f0f0;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #333;
+            font-weight: bold;
+        }
+        .items-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .items-table tbody tr {
+            cursor: pointer;
+        }
+        .items-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+        .status-closed { background-color: #ffcccc; }
+        .status-completed { background-color: #ccffcc; }
+        .status-purchased { background-color: #ffffcc; }
+        .status-offered { background-color: #ffeecc; }
+        .status-written { background-color: #e6ccff; }
+        .status-collected { background-color: #ccffff; }
+        .status-mistakes { background-color: #ffccff; }
+                 .btn-action {
+             padding: 8px 15px;
+             margin: 3px;
+             border: 2px solid #007bff;
+             background: linear-gradient(135deg, #007bff, #0056b3);
+             cursor: pointer;
+             border-radius: 8px;
+             text-decoration: none;
+             color: white;
+             font-size: 13px;
+             font-weight: 500;
+             display: inline-block;
+             transition: all 0.3s ease;
+             box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+         }
+         .btn-action:hover {
+             background: linear-gradient(135deg, #0056b3, #004085);
+             border-color: #004085;
+             transform: translateY(-1px);
+             box-shadow: 0 4px 8px rgba(0,123,255,0.4);
+         }
+         .btn-action.btn-delete {
+             background: linear-gradient(135deg, #dc3545, #c82333);
+             border-color: #dc3545;
+             box-shadow: 0 2px 4px rgba(220,53,69,0.3);
+         }
+         .btn-action.btn-delete:hover {
+             background: linear-gradient(135deg, #c82333, #a71e2a);
+             border-color: #a71e2a;
+             box-shadow: 0 4px 8px rgba(220,53,69,0.4);
+         }
+         .messages {
+             margin-bottom: 20px;
+         }
+         .message {
+             padding: 15px;
+             margin-bottom: 10px;
+             border-radius: 5px;
+         }
+         .message.success {
+             background-color: #d4edda;
+             border: 1px solid #c3e6cb;
+             color: #155724;
+         }
+         .message.error {
+             background-color: #f8d7da;
+             border: 1px solid #f5c6cb;
+             color: #721c24;
+         }
+    </style>
+</head>
+<body>
+    <h1>Управление отправками</h1>
+    
+    <!-- Сообщения -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <div class="filters">
+                <!-- Первая строка фильтров -->
+        <div class="filter-row">
+            <div class="filter-group">
+                <span class="filter-label">страна отправки</span>
+                 <a href="?{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}&{% endif %}{% if current_filters.priority %}priority={{ current_filters.priority }}&{% endif %}" 
+                    class="filter-btn {% if not current_filters.country %}active{% endif %}">все</a>
+                 {% for country_key, country_value in countries %}
+                 <a href="?country={{ country_key }}{% if current_filters.shipper %}&shipper={{ current_filters.shipper }}{% endif %}{% if current_filters.status %}&status={{ current_filters.status }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}" 
+                    class="filter-btn {% if current_filters.country == country_key %}active{% endif %}">{{ country_value }}</a>
+                 {% endfor %}
+             </div>
+             <div style="margin-left: auto;">
+                 <a href="{% url 'sendRegister' %}" class="filter-btn">Регистрация отправки</a>
+             </div>
+        </div>
+        
+                 <!-- Вторая строка фильтров -->
+         <div class="filter-row">
+             <div class="filter-group">
+                 <span class="filter-label">склад отправки</span>
+                 <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}&{% endif %}{% if current_filters.priority %}priority={{ current_filters.priority }}&{% endif %}" 
+                    class="filter-btn {% if not current_filters.shipper %}active{% endif %}">все</a>
+                 {% for shipper_key, shipper_value in shippers %}
+                 <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}shipper={{ shipper_key }}{% if current_filters.status %}&status={{ current_filters.status }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}" 
+                    class="filter-btn {% if current_filters.shipper == shipper_key %}active{% endif %}">{{ shipper_value }}</a>
+                 {% endfor %}
+             </div>
+         </div>
+         
+         <!-- Третья строка фильтров -->
+         <div class="filter-row">
+             <div class="filter-group">
+                 <span class="filter-label">магазин</span>
+                 <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}&{% endif %}{% if current_filters.priority %}priority={{ current_filters.priority }}&{% endif %}" 
+                    class="filter-btn {% if not current_filters.marketplace %}active{% endif %}">все</a>
+                 <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}marketplace=ebay{% if current_filters.status %}&status={{ current_filters.status }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}" 
+                    class="filter-btn {% if current_filters.marketplace == 'ebay' %}active{% endif %}">Ebay</a>
+             </div>
+         </div>
+         
+         <!-- Четвертая строка фильтров -->
+         <div class="filter-row">
+             <div class="filter-group">
+                 <span class="filter-label">показать все с статусом</span>
+                <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.priority %}priority={{ current_filters.priority }}&{% endif %}" 
+                   class="filter-btn {% if not current_filters.status %}active{% endif %}">все</a>
+                {% for status_key, status_value in statuses %}
+                <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}status={{ status_key }}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}" 
+                   class="filter-btn {% if current_filters.status == status_key %}active{% endif %}">{{ status_value }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        
+                 <!-- Пятая строка фильтров -->
+         <div class="filter-row">
+             <div class="filter-group">
+                 <span class="filter-label">приоретенность</span>
+                 <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}&{% endif %}" 
+                    class="filter-btn {% if not current_filters.priority %}active{% endif %}">все</a>
+                 <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}&{% endif %}priority=high" 
+                    class="filter-btn {% if current_filters.priority == 'high' %}active{% endif %}">высокий</a>
+                 <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}&{% endif %}priority=medium" 
+                    class="filter-btn {% if current_filters.priority == 'medium' %}active{% endif %}">средний</a>
+                 <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}&{% endif %}priority=low" 
+                    class="filter-btn {% if current_filters.priority == 'low' %}active{% endif %}">низкий</a>
+             </div>
+         </div>
+
+    </div>
+    
+    <!-- Таблица записей -->
+    <div class="table-container">
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Действия</th>
+                    <th>Магазин</th>
+                    <th>ID</th>
+                    <th>Статус</th>
+                    <th>Приоритет</th>
+                    <th>Удалить</th>
+                </tr>
+            </thead>
+            <tbody>
+                                {% for item in shipping_items %}
+                <tr class="{% if item.status == 'ЗАКРЫТО' %}status-closed{% elif item.status == 'ЗАВЕРШЕНО' %}status-completed{% elif item.status == 'КУПЛЕННО' %}status-purchased{% elif item.status == 'ОФФЕР' %}status-offered{% elif item.status == 'НАПИСАЛИ' %}status-written{% elif item.status == 'СОБРАННО' %}status-collected{% elif item.status == 'ОШИБКИ' %}status-mistakes{% endif %}">
+                    <td>
+                        <a href="{% url 'edit_shipping_item' item.pk %}" class="btn-action">📝 перейти в формочку</a>
+                    </td>
+                    <td>Ebay</td>
+                    <td>{{ item.pk }}</td>
+                    <td>{{ item.get_status_display }}</td>
+                    <td>{{ current_filters.priority|default:"все" }}</td>
+                    <td>
+                        <a href="{% url 'delete_shipping_item' item.pk %}" class="btn-action btn-delete">удалить</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 30px;">
+                        Нет записей, соответствующих выбранным фильтрам
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <script>
+        // Функция для перехода к форме редактирования при клике на строку
+        document.querySelectorAll('.items-table tbody tr').forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Проверяем, что клик не по кнопке удаления
+                if (!e.target.getAttribute('href') || !e.target.getAttribute('href').includes('delete')) {
+                    const itemId = this.querySelectorAll('td')[2].textContent; // ID теперь в третьей колонке
+                    // Переход к форме редактирования
+                    window.location.href = '/sellship/items/edit/' + itemId + '/';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
