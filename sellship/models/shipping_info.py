@@ -46,9 +46,9 @@ class CurrencyChoices(models.TextChoices):
 
 
 class PriorityChoices(models.TextChoices):
-    HIGH = "high", "High"
-    MEDIUM = "medium", "Medium"
-    LOW = "low", "Low"
+    HIGH = "high", "Высокий"
+    MEDIUM = "medium", "Средний"
+    LOW = "low", "Низкий"
 
 
 class EbayShippingInfo(models.Model):

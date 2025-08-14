@@ -9,6 +9,21 @@ class EbayShippingInfoForm(forms.ModelForm):
         widget=forms.HiddenInput()
     )
 
+    priority = forms.ChoiceField(
+        choices=[
+            ('low', 'Низкий'),
+            ('medium', 'Средний'),
+            ('high', 'Высокий'),
+        ],
+        initial='low',
+        widget=forms.Select(
+            attrs={
+                'class': 'priority-select'
+            }
+        ),
+        required=False
+    )
+
     date_arrive = forms.DateField(
         widget=forms.DateInput(
             attrs={
