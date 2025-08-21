@@ -1,3 +1,4 @@
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -44,7 +45,7 @@
             </div>
             <div class="detail-row">
                 <span class="detail-label">Финальная цена:</span>
-                <span>{{ shipping_item.final_price }}</span>
+                <span>{{ shipping_item.final_price|format_price }}</span>
             </div>
         </div>
         
@@ -54,8 +55,8 @@
             <form method="post" style="display: inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-delete">Да, удалить</button>
+                <a href="{% url 'items' %}" class="btn btn-cancel" style="margin-left: 20px">Отмена</a>
             </form>
-            <a href="{% url 'items' %}" class="btn btn-cancel">Отмена</a>
         </div>
     </div>
 </body>

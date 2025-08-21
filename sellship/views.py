@@ -48,6 +48,9 @@ def delete_shipping_item(request, item_id):
     }
     return render(request, 'confirm_delete.html', context)
 
+def index_view(request):
+    return redirect('/sellship/items/')
+
 def items_view(request):
     # Получаем параметры фильтрации из GET запроса
     country_filter = request.GET.get('country')
