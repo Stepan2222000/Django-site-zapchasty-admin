@@ -77,7 +77,7 @@ function switchFormStatus(statusType, updateHash = true) {
     
     // Показываем кнопку отправки только если статус выбран
     if (submitButton) {
-        submitButton.style.display = 'block';
+        submitButton.style.display = 'inline-flex';
     }
     
     // Обновляем URL с хэшем только если это не восстановление из URL
@@ -134,23 +134,14 @@ function restoreStateFromURL() {
     }
 }
 
-// Функция для скрытия кнопки отправки
-function hideSubmitButton() {
-    if (submitButton) {
-        submitButton.style.display = 'none';
-    }
-}
-
-// Скрываем кнопку отправки при загрузке страницы
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-    hideSubmitButton();
-    
     // Инициализация плавающих labels
     initFloatingLabels();
-    
-        // Восстанавливаем состояние из URL
+
+    // Восстанавливаем состояние из URL
     restoreStateFromURL();
-    
+
     // Обработчик изменения хэша в URL
     window.addEventListener('hashchange', function() {
         restoreStateFromURL();
@@ -488,6 +479,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+    });
+});
+
+// -------- Clear form button
+document.addEventListener('DOMContentLoaded', function() {
+    const clearBtn = document.getElementById('clear-form-btn');
+    const form = document.getElementById('purchase-ebay-form');
+    if (!clearBtn || !form) return;
+
+    clearBtn.addEventListener('click', function() {
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(el => {
+            const name = el.getAttribute('name');
+            // Сохраняем csrfmiddlewaretoken и status
+            if (name === 'csrfmiddlewaretoken' || name === 'status') return;
+
+            if (el.tagName === 'SELECT') {
+                el.selectedIndex = -1;
+            } else if (el.type === 'checkbox' || el.type === 'radio') {
+                el.checked = false;
+            } else {
+                el.value = '';
+            }
+
+            // Обновляем состояния плавающих лейблов
+            const container = el.closest('.floating-label-container');
+            if (container) {
+                container.classList.remove('has-value');
+                container.classList.remove('focused');
+            }
+        });
+
+        // Очистить список автодополнения
+        const list = document.getElementById('autoArticleComplete-list');
+        if (list) {
+            list.innerHTML = '';
+            list.style.display = 'none';
+            list.style.visibility = 'hidden';
+        }
     });
 });
 

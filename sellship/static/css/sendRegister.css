@@ -172,31 +172,11 @@ button:disabled {
     background-color: #666;
 }
 
-/* Стили для кнопки отправки */
-#purchase-ebay-form button[type="submit"] {
-    background-color: #4CAF50;
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: 20px 0 10px 0;
-    font-size: 16px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    display: none; /* Скрыта по умолчанию */
+#other-site-button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
 }
 
-#purchase-ebay-form button[type="submit"]:hover {
-    background-color: #45a049;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-#purchase-ebay-form button[type="submit"]:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
 
 /* Стили для автодополнения артикула */
 #autoArticleComplete-list {
@@ -561,10 +541,6 @@ input[type=number] {
     transform: translateY(0);
 }
 
-/* Переопределяем видимость только для submit по умолчанию */
-#purchase-ebay-form button[type="submit"].btn {
-    display: none;
-}
 
 /* Вариант кнопки отмены (серый цвет) */
 .btn-cancel {
@@ -579,20 +555,48 @@ input[type=number] {
     background-color: #545b62;
 }
 
+/* Вариант кнопки очистки (оранжевый) */
+.btn-clear {
+    background-color: #ff9800;
+}
+.btn-clear:hover {
+    background-color: #fb8c00;
+}
+.btn-clear:active {
+    background-color: #f57c00;
+}
+
 /* Контейнер для кнопок отправки/отмены */
 .button-row {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: center;
+    gap: 10px;
     margin-top: 10px;
 }
 
-/* Выравнивание кнопок внутри ряда */
-#purchase-ebay-form .button-row .btn {
-    margin: 0; /* переопределяет margin из общих стилей кнопок */
+.button-left {
+    justify-self: start;
+}
+
+.button-right {
+    justify-self: end;
     display: inline-flex;
+    gap: 10px;
     align-items: center;
+}
+
+.button-row button.btn {
+    margin: 0;
+}
+
+/* Выделение выбранного сайта (в т.ч. disabled) */
+#ebay-button.selected-site {
+    background-color: #2196F3;
+}
+#ebay-button.selected-site:disabled {
+    background-color: #2196F3;
+    cursor: default;
 }
 
 

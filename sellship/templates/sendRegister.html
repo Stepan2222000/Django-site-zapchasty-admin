@@ -14,6 +14,10 @@
     <h1>Редактирование записи #{{ shipping_item.pk }}</h1>
     <p>Запись создана: {{ shipping_item.last_updated_status|date:"d.m.Y H:i" }}</p>
 </div>
+<div class="marketSelectBlock">
+    <button id="ebay-button" class="selected-site" disabled>Ebay</button>
+    <button id="other-site-button" disabled>Other Site</button>
+</div>
 {% else %}
 <div class="marketSelectBlock">
     <button id="ebay-button" disabled>Ebay</button>
@@ -199,10 +203,15 @@
         </div>
         
         <div class="button-row">
-            <button class="btn" type="submit">{% if is_edit %}Обновить{% else %}Отправить{% endif %}</button>
-            {% if is_edit %}
-            <a href="{% url 'items' %}" class="btn btn-cancel">Отмена</a>
-            {% endif %}
+            <div class="button-left">
+                <button class="btn btn-clear" type="button" id="clear-form-btn">Очистить</button>
+            </div>
+            <div class="button-right">
+                <button class="btn" type="submit">{% if is_edit %}Обновить{% else %}Отправить{% endif %}</button>
+                {% if is_edit %}
+                <a href="{% url 'items' %}" class="btn btn-cancel">Отмена</a>
+                {% endif %}
+            </div>
         </div>
     </form>
     <form id="purchase-other-form" class="hide-form" action="/sellship/sendRegister/other-sites/" method="POST">
