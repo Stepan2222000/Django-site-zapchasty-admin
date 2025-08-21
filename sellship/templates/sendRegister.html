@@ -205,12 +205,13 @@
         <div class="button-row">
             <div class="button-left">
                 <button class="btn btn-clear" type="button" id="clear-form-btn">Очистить</button>
+                {% if is_edit %}
+                <a href="{% url 'delete_shipping_item' shipping_item.pk %}" class="btn btn-delete">Удалить</a>
+                {% endif %}
             </div>
             <div class="button-right">
-                <button class="btn" type="submit">{% if is_edit %}Обновить{% else %}Отправить{% endif %}</button>
-                {% if is_edit %}
                 <a href="{% url 'items' %}" class="btn btn-cancel">Отмена</a>
-                {% endif %}
+                <button class="btn" type="submit">{% if is_edit %}Сохранить{% else %}Отправить{% endif %}</button>
             </div>
         </div>
     </form>

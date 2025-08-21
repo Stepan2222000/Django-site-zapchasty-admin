@@ -9,6 +9,14 @@
 <body>
     <h1>Управление отправками</h1>
     
+    <!-- Переключатель темы -->
+    <div class="theme-switcher">
+        <button id="theme-toggle" class="theme-btn">
+            <span class="theme-icon">🌙</span>
+            <span class="theme-text">Тёмная тема</span>
+        </button>
+    </div>
+    
     <!-- Сообщения -->
     {% if messages %}
         <div class="messages">
@@ -158,6 +166,35 @@
                 this.style.transform = 'translateY(0)';
             });
         });
+        
+        // Переключатель темы
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('.theme-icon');
+        const themeText = themeToggle.querySelector('.theme-text');
+        
+        // Загружаем сохранённую тему
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeButton(savedTheme);
+        
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+        });
+        
+        function updateThemeButton(theme) {
+            if (theme === 'light') {
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Светлая тема';
+            } else {
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Тёмная тема';
+            }
+        }
     </script>
 </body>
 </html> 

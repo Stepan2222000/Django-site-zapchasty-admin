@@ -566,6 +566,17 @@ input[type=number] {
     background-color: #f57c00;
 }
 
+/* Вариант кнопки удаления (красный) */
+.btn-delete {
+    background-color: #dc3545;
+}
+.btn-delete:hover {
+    background-color: #c82333;
+}
+.btn-delete:active {
+    background-color: #bd2130;
+}
+
 /* Контейнер для кнопок отправки/отмены */
 .button-row {
     display: grid;
@@ -577,6 +588,9 @@ input[type=number] {
 
 .button-left {
     justify-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .button-right {
@@ -599,4 +613,66 @@ input[type=number] {
     cursor: default;
 }
 
+/* Стили для страницы подтверждения удаления */
+.delete-container {
+    max-width: 600px;
+    margin: 50px auto;
+    background: #2D2D2D;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    text-align: center;
+    border: 1px solid #555;
+}
 
+.warning-icon {
+    font-size: 48px;
+    color: #ff6b6b;
+    margin-bottom: 20px;
+}
+
+.delete-container h1 {
+    color: white;
+    margin-bottom: 20px;
+}
+
+.delete-container p {
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.item-details {
+    background: #3D3D3D;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: left;
+    border: 1px solid #555;
+}
+
+.item-details h3 {
+    margin-top: 0;
+    color: #4CAF50;
+    margin-bottom: 15px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #555;
+}
+
+.detail-label {
+    font-weight: bold;
+    color: #aaa;
+}
+
+.detail-row span:last-child {
+    color: white;
+}
+
+.buttons {
+    margin-top: 30px;
+    display: flex;
