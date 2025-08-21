@@ -534,4 +534,65 @@ input[type=number] {
     font-size: 14px;
 }
 
+/* Унифицированные стили для основных кнопок */
+ .btn {
+     display: inline-flex;
+     align-items: center;
+     vertical-align: middle;
+     line-height: 1.2;
+     background-color: #4CAF50;
+     color: white;
+     padding: 12px 30px;
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+     font-size: 16px;
+     font-weight: bold;
+     text-decoration: none;
+     transition: all 0.3s ease;
+ }
+
+.btn:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Переопределяем видимость только для submit по умолчанию */
+#purchase-ebay-form button[type="submit"].btn {
+    display: none;
+}
+
+/* Вариант кнопки отмены (серый цвет) */
+.btn-cancel {
+    background-color: #6c757d;
+}
+
+.btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+.btn-cancel:active {
+    background-color: #545b62;
+}
+
+/* Контейнер для кнопок отправки/отмены */
+.button-row {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 10px;
+}
+
+/* Выравнивание кнопок внутри ряда */
+#purchase-ebay-form .button-row .btn {
+    margin: 0; /* переопределяет margin из общих стилей кнопок */
+    display: inline-flex;
+    align-items: center;
+}
+
 

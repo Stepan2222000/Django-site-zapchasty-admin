@@ -36,7 +36,7 @@
 <div id="form-container">
     <form id="purchase-ebay-form" action="{% if is_edit %}{% url 'edit_shipping_item' shipping_item.pk %}{% else %}{% url 'sendRegister' %}{% endif %}" method="POST">
         {% csrf_token %}
-        <input type="hidden" name="status" value="КУПЛЕННО">
+        <input type="hidden" name="status" value="{% if is_edit %}{{ shipping_item.status }}{% else %}КУПЛЕННО{% endif %}">
         <div class="floating-label-container">
             {{ form.number_announcement }}
             <label for="{{ form.number_announcement.id_for_label }}" class="floating-label">Номер объявления</label>
@@ -185,17 +185,25 @@
         </div>
 
         <div id="form-massage" class="status-form hide-form">
-            <p>Форма для статуса "Написал"</p>
+            <div class="floating-label-container">
+                <textarea id="comments-mirror-massage" rows="4" cols="40"></textarea>
+                <label for="comments-mirror-massage" class="floating-label">Дополнительный комментарий</label>
+            </div>
         </div>
 
         <div id="form-offer" class="status-form hide-form">
-            <p>Форма для статуса "Оффер"</p>
+            <div class="floating-label-container">
+                <textarea id="comments-mirror-offer" rows="4" cols="40"></textarea>
+                <label for="comments-mirror-offer" class="floating-label">Дополнительный комментарий</label>
+            </div>
         </div>
         
-        <button type="submit">{% if is_edit %}Обновить{% else %}Отправить{% endif %}</button>
-        {% if is_edit %}
-        <a href="{% url 'items' %}" style="display: inline-block; margin-left: 10px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px;">Отмена</a>
-        {% endif %}
+        <div class="button-row">
+            <button class="btn" type="submit">{% if is_edit %}Обновить{% else %}Отправить{% endif %}</button>
+            {% if is_edit %}
+            <a href="{% url 'items' %}" class="btn btn-cancel">Отмена</a>
+            {% endif %}
+        </div>
     </form>
     <form id="purchase-other-form" class="hide-form" action="/sellship/sendRegister/other-sites/" method="POST">
         <p>ПРИВЕТ КАК ДЕЛА</p>
@@ -212,11 +220,15 @@
 {% if is_edit %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Автоматически выбираем статус "Куплено" для режима редактирования
+    // В режиме редактирования по умолчанию выбираем "Куплено",
+    // но если в URL уже есть #action=..., уважаем его
     setTimeout(function() {
-        const statusButton = document.querySelector('[data-option="form-buy"]');
-        if (statusButton) {
-            statusButton.click();
+        const hasActionHash = /#action=([^&]+)/.test(window.location.hash);
+        if (!hasActionHash) {
+            const statusButton = document.querySelector('[data-option="form-buy"]');
+            if (statusButton) {
+                statusButton.click();
+            }
         }
     }, 100);
 });

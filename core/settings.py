@@ -85,6 +85,8 @@ WSGI_APPLICATION = "core.wsgi.application"
 DATABASE_NAME = os.getenv('DATABASE_NAME')      # Берем их из .env файла
 DATABASE_USER = os.getenv('DATABASE_USER')
 DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+DATABASE_HOST = os.getenv('DATABASE_HOST')
+DATABASE_PORT = os.getenv('DATABASE_PORT')
 
 DATABASES = {
     'default': {
@@ -92,8 +94,8 @@ DATABASES = {
         'NAME': DATABASE_NAME,       # ← Название базы данных
         'USER': DATABASE_USER,       # ← Имя пользователя PostgreSQL
         'PASSWORD': DATABASE_PASSWORD,        # ← Пароль
-        'HOST': 'localhost',                # ← Или IP-адрес (например, '127.0.0.1')
-        'PORT': '5432',                     # ← Стандартный порт PostgreSQL
+        'HOST': DATABASE_HOST,                # ← Или IP-адрес (например, '127.0.0.1')
+        'PORT': DATABASE_PORT,                     # ← Стандартный порт PostgreSQL
     }
 }
 

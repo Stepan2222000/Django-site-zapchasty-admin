@@ -86,6 +86,29 @@ function switchFormStatus(statusType, updateHash = true) {
     }
 }
 
+// Map between tab ids and status values expected by backend
+const TAB_TO_STATUS = {
+    'form-buy': 'КУПЛЕННО',
+    'form-massage': 'НАПИСАЛИ',
+    'form-offer': 'ОФФЕР'
+};
+
+function setHiddenStatusByTab(tabId) {
+    const form = document.getElementById('purchase-ebay-form');
+    if (!form) return;
+    const hiddenStatus = form.querySelector('input[name="status"]');
+    if (!hiddenStatus) return;
+    const newStatus = TAB_TO_STATUS[tabId];
+    if (newStatus) hiddenStatus.value = newStatus;
+}
+
+// Hook into status switch to update status input
+const originalSwitchFormStatus = switchFormStatus;
+switchFormStatus = function(statusType, updateHash = true) {
+    originalSwitchFormStatus(statusType, updateHash);
+    setHiddenStatusByTab(statusType);
+};
+
 // Функция для обновления URL хэша
 function updateURLHash(action) {
     const currentHash = window.location.hash;
@@ -409,6 +432,61 @@ document.addEventListener('DOMContentLoaded', function () {
             if (this.value !== clean) {
                 this.value = clean;
             }
+        });
+    });
+});
+
+// -------- Sync comments between tabs (massage, offer)
+document.addEventListener('DOMContentLoaded', function() {
+    const mainComments = document.querySelector('#purchase-ebay-form textarea[name="comments"]');
+    const mirrorIds = ['comments-mirror-massage', 'comments-mirror-offer'];
+    const mirrors = mirrorIds.map(id => document.getElementById(id)).filter(Boolean);
+
+    if (!mainComments || mirrors.length === 0) return;
+
+    // Initialize mirrors with current value
+    mirrors.forEach(m => {
+        m.value = mainComments.value || '';
+        const container = m.closest('.floating-label-container');
+        if (container) {
+            if (m.value && m.value !== '') container.classList.add('has-value');
+            else container.classList.remove('has-value');
+        }
+    });
+
+    // Update mirrors when main changes
+    mainComments.addEventListener('input', function() {
+        mirrors.forEach(m => {
+            if (m.value !== mainComments.value) {
+                m.value = mainComments.value;
+                const container = m.closest('.floating-label-container');
+                if (container) {
+                    if (m.value && m.value !== '') container.classList.add('has-value');
+                    else container.classList.remove('has-value');
+                }
+            }
+        });
+    });
+
+    // Update main (and other mirrors) when any mirror changes
+    mirrors.forEach(m => {
+        m.addEventListener('input', function() {
+            if (mainComments.value !== m.value) {
+                mainComments.value = m.value;
+                const evt = new Event('input', { bubbles: true });
+                mainComments.dispatchEvent(evt);
+            }
+            // Propagate to other mirrors
+            mirrors.forEach(other => {
+                if (other !== m && other.value !== m.value) {
+                    other.value = m.value;
+                    const container = other.closest('.floating-label-container');
+                    if (container) {
+                        if (other.value && other.value !== '') container.classList.add('has-value');
+                        else container.classList.remove('has-value');
+                    }
+                }
+            });
         });
     });
 });
