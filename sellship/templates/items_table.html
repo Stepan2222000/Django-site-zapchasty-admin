@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Динамическая таблица данных</title>
+    <link rel="stylesheet" href="/static/css/items.css">
+    {% load custom_filters %}
+    <style>
+        /* Стили для селекторов */
+        .selectors-container {
+            background: #2D2D2D;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #555;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .selector-group {
+            margin-bottom: 20px;
+        }
+        
+        .selector-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .selector-label {
+            display: block;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        
+        .selector-select {
+            width: 100%;
+            padding: 12px 15px;
+            background: #3D3D3D;
+            border: 2px solid #555;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .selector-select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+        
+        .selector-select option {
+            background: #3D3D3D;
+            color: white;
+            padding: 10px;
+        }
+        
+        /* Стили для чекбоксов в заголовках */
+        .header-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .header-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #4CAF50;
+            margin-bottom: 5px;
+        }
+        
+        .header-checkbox label {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .field-info {
+            color: #aaa;
+            font-size: 10px;
+            margin-top: 3px;
+            font-weight: normal;
+            text-transform: none;
+        }
+        
+        /* Кнопка "Соединить" */
+        .connect-button {
+            display: none;
+            margin: 30px auto;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .connect-button:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        .connect-button.show {
+            display: block;
+        }
+        
+        /* Стили для таблицы */
+        .table-container {
+            background: #2D2D2D;
+            border: 2px solid #555;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .items-table th {
+            background: linear-gradient(135deg, #3D3D3D, #2D2D2D);
+            padding: 15px 8px;
+            text-align: center;
+            border-bottom: 2px solid #555;
+            font-weight: bold;
+            color: #4CAF50;
+            font-size: 12px;
+            vertical-align: top;
+            min-width: 120px;
+        }
+        
+        .items-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #444;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 13px;
+        }
+        
+        .items-table tbody tr {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .items-table tbody tr:hover {
+            background: #3D3D3D;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Стили для пагинации */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #2D2D2D;
+            border-radius: 10px;
+            border: 1px solid #555;
+        }
+        
+        .pagination a {
+            padding: 10px 15px;
+            background: #3D3D3D;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: 1px solid #555;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination a:hover {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+        }
+        
+        .pagination .current {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .pagination .disabled {
+            background: #666;
+            color: #aaa;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        /* Стили для статистики */
+        .stats {
+            background: #2D2D2D;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #555;
+            text-align: center;
+        }
+        
+        .stats h3 {
+            color: #4CAF50;
+            margin: 0 0 15px 0;
+        }
+        
+        .stats p {
+            margin: 5px 0;
+            color: #aaa;
+        }
+        
+        /* Стили для сообщений об ошибках */
+        .messages {
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .message.error {
+            background-color: #f44336;
+            color: white;
+            border: 1px solid #da190b;
+        }
+        
+        .message.success {
+            background-color: #4CAF50;
+            color: white;
+            border: 1px solid #45a049;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .items-table th,
+            .items-table td {
+                padding: 8px 4px;
+                font-size: 11px;
+            }
+            
+            .header-checkbox label {
+                font-size: 10px;
+            }
+            
+            .field-info {
+                font-size: 9px;
+            }
+        }
+
+        .btn-apply {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-apply:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-cancel {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cancel:hover {
+            background: linear-gradient(135deg, #5a6268, #495057);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Динамическая таблица данных</h1>
+    
+    <!-- Сообщения -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Селекторы -->
+    <div class="selectors-container">
+        <form id="selectors-form" method="GET">
+            <!-- Выбор базы данных -->
+            <div class="selector-group">
+                <label class="selector-label">🗄️ База данных</label>
+                <select name="database" class="selector-select" onchange="this.form.submit()">
+                    {% for db in databases %}
+                        <option value="{{ db }}" {% if db == selected_db %}selected{% endif %}>
+                            {{ db|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Выбор таблицы/модели -->
+            <div class="selector-group">
+                <label class="selector-label">📋 Таблица/Модель</label>
+                <select name="model" class="selector-select" onchange="this.form.submit()">
+                    <option value="">-- Выберите таблицу --</option>
+                    {% for model in all_models %}
+                        <option value="{{ model.app_label }}.{{ model.model_name }}" 
+                                {% if selected_model and selected_model.app_label == model.app_label and selected_model.model_name == model.model_name %}selected{% endif %}>
+                            {{ model.verbose_name|default:model.model_name }} ({{ model.app_label }}.{{ model.model_name }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Statistics for First Table -->
+    {% if selected_model and selected_fields %}
+    <div class="stats">
+        <h3>📊 Статистика</h3>
+        <p>База данных: <strong>{{ selected_db }}</strong></p>
+        <p>Таблица: <strong>{{ selected_model.verbose_name|default:selected_model.model_name }}</strong></p>
+        <p>Выбрано полей: <strong id="selected-fields-count">{{ selected_fields|length }}</strong> из <strong>{{ selected_model.fields|length }}</strong></p>
+        {% if total_items %}
+        <p>Всего записей: <strong>{{ total_items }}</strong></p>
+        <p>Страница: <strong>{{ current_page }}</strong> из <strong>{{ total_pages }}</strong></p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Data Table for First Table -->
+    {% if model_data %}
+    <div class="table-container">
+        <table class="items-table">
+            <thead>
+                <tr>
+                    {% for field_name in selected_fields %}
+                        {% for field in selected_model.fields %}
+                            {% if field.name == field_name %}
+                            <th>
+                                <div class="header-checkbox">
+                                    <input type="checkbox" 
+                                           id="header-{{ field.name }}" 
+                                           class="field-selector"
+                                           data-field="{{ field.name }}"
+                                           onchange="updateFieldSelection()">
+                                    <label for="header-{{ field.name }}">
+                                        {{ field.verbose_name|default:field.name }}
+                                        <div class="field-info">
+                                            {{ field.type }}{% if field.max_length %} ({{ field.max_length }}){% endif %}
+                                        </div>
+                                    </label>
+                                </div>
+                            </th>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in model_data %}
+                <tr>
+                    {% for field_name in selected_fields %}
+                        <td>
+                            {% if row|get_item:field_name %}
+                                {% if row|get_item:field_name|is_list %}
+                                    {% for item in row|get_item:field_name|slice:":3" %}
+                                        <span class="tag">{{ item }}</span>
+                                    {% endfor %}
+                                    {% if row|get_item:field_name|length > 3 %}
+                                        <span class="tag">+{{ row|get_item:field_name|length|add:"-3" }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    {{ row|get_item:field_name }}
+                                {% endif %}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{{ selected_fields|length }}" style="text-align: center; padding: 30px; color: #aaa;">
+                        Нет данных для отображения
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Connect Button -->
+    {% if selected_model and selected_fields %}
+    <button id="connect-button" class="connect-button" onclick="toggleSecondSelector()">🔗 Соединить выбранные поля</button>
+    {% endif %}
+    
+    <!-- Второй блок выбора (для соединения) -->
+    <div id="second-selector" class="selectors-container" style="display: none;">
+        <h3 style="color: #4CAF50; text-align: center; margin-bottom: 20px;">🔗 Выбор второй таблицы для соединения</h3>
+        <form id="second-selectors-form" method="GET">
+            <!-- Сохраняем параметры первой таблицы -->
+            <input type="hidden" name="database" value="{{ selected_db }}">
+            <input type="hidden" name="model" value="{{ selected_model.app_label }}.{{ selected_model.model_name }}">
+            {% for field in selected_fields %}
+                <input type="hidden" name="fields" value="{{ field }}">
+            {% endfor %}
+            
+            <!-- Скрытое поле для сохранения second_model при изменении базы -->
+            <input type="hidden" name="temp_second_model" value="{{ second_model.app_label }}.{{ second_model.model_name|default:'' }}">
+            
+            <!-- Second Database Selection -->
+            <div class="selector-group">
+                <label class="selector-label">🗄️ База данных (вторая таблица)</label>
+                <select name="second_database" class="selector-select" onchange="onSecondDatabaseChange()">
+                    {% for db in databases %}
+                        <option value="{{ db }}" {% if db == second_db %}selected{% endif %}>
+                            {{ db|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Second Table/Model Selection -->
+            <div class="selector-group">
+                <label class="selector-label">📋 Вторая таблица/Модель</label>
+                <select name="second_model" class="selector-select" onchange="onSecondModelChange()">
+                    <option value="">-- Выберите вторую таблицу --</option>
+                    {% for model in all_models %}
+                        <option value="{{ model.app_label }}.{{ model.model_name }}" 
+                                {% if second_model and second_model.app_label == model.app_label and second_model.model_name == model.model_name %}selected{% endif %}>
+                            {{ model.verbose_name|default:model.model_name }} ({{ model.app_label }}.{{ model.model_name }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Пагинация -->
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% if has_previous %}
+            <a href="?database={{ selected_db }}&model={{ selected_model.app_label }}.{{ selected_model.model_name }}{% for field in selected_fields %}&fields={{ field }}{% endfor %}&page=1">« Первая</a>
+            <a href="?database={{ selected_db }}&model={{ selected_model.app_label }}.{{ selected_model.model_name }}{% for field in selected_fields %}&fields={{ field }}{% endfor %}&page={{ previous_page }}">‹ Предыдущая</a>
+        {% else %}
+            <span class="disabled">« Первая</span>
+            <span class="disabled">‹ Предыдущая</span>
+        {% endif %}
+        
+        <span class="current">{{ current_page }}</span>
+        
+        {% if has_next %}
+            <a href="?database={{ selected_db }}&model={{ selected_model.app_label }}.{{ selected_model.model_name }}{% for field in selected_fields %}&fields={{ field }}{% endfor %}&page={{ next_page }}">Следующая ›</a>
+            <a href="?database={{ selected_db }}&model={{ selected_model.app_label }}.{{ selected_model.model_name }}{% for field in selected_fields %}&fields={{ field }}{% endfor %}&page={{ total_pages }}">Последняя »</a>
+        {% else %}
+            <span class="disabled">Следующая ›</span>
+            <span class="disabled">Последняя »</span>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Навигация -->
+    <div style="text-align: center; margin: 20px 0;">
+        <a href="{% url 'items' %}" class="filter-btn">← Назад к отправкам</a>
+        <a href="{% url 'sendRegister' %}" class="filter-btn register-btn">➕ Новая отправка</a>
+    </div>
+
+    <!-- Отладочная информация (временно) -->
+    <div style="background: #2D2D2D; padding: 15px; margin: 20px 0; border-radius: 5px; border: 1px solid #555;">
+        <h4 style="color: #ff9800; margin: 0 0 10px 0;">🐛 Отладка:</h4>
+        <p style="margin: 5px 0; color: #aaa; font-size: 12px;">
+            <strong>second_model:</strong> {{ second_model|yesno:"Да,Нет" }}<br>
+            <strong>second_model_data:</strong> {{ second_model_data|length }} записей<br>
+            <strong>total_second_items:</strong> {{ total_second_items }}<br>
+            <strong>second_db:</strong> {{ second_db }}<br>
+            <strong>URL:</strong> {{ request.GET.urlencode }}
+        </p>
+    </div>
+
+    <!-- Вторая таблица (в самом низу страницы) -->
+    {% if second_model %}
+    <div style="margin-top: 50px; border-top: 3px solid #555; padding-top: 30px;">
+        <h3 style="color: #4CAF50; text-align: center; margin-bottom: 20px;">📊 Вторая таблица: {{ second_model.verbose_name|default:second_model.model_name }}</h3>
+        
+        <div class="stats" style="margin-bottom: 20px;">
+            <p style="margin: 5px 0; color: #aaa; font-size: 14px;">
+                База данных: <strong>{{ second_db }}</strong> | 
+                Всего записей: <strong>{{ total_second_items }}</strong> | 
+                Показано: <strong>{{ second_model_data|length }}</strong>
+            </p>
+        </div>
+        
+        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        {% for field in second_model.fields %}
+                        <th style="position: sticky; top: 0; z-index: 10;">
+                            <div class="header-checkbox">
+                                <input type="checkbox" 
+                                       id="second-header-{{ field.name }}" 
+                                       class="second-field-selector"
+                                       data-field="{{ field.name }}"
+                                       checked
+                                       onchange="updateSecondFieldSelection()">
+                                <label for="second-header-{{ field.name }}">
+                                    {{ field.verbose_name|default:field.name }}
+                                    <div class="field-info">
+                                        {{ field.type }}{% if field.max_length %} ({{ field.max_length }}){% endif %}
+                                    </div>
+                                </label>
+                            </div>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if second_model_data %}
+                        {% for row in second_model_data %}
+                        <tr>
+                            {% for field in second_model.fields %}
+                                <td>
+                                    {% if row|get_item:field.name %}
+                                        {% if row|get_item:field.name|is_list %}
+                                            {% for item in row|get_item:field.name|slice:":3" %}
+                                                <span class="tag">{{ item }}</span>
+                                            {% endfor %}
+                                            {% if row|get_item:field.name|length > 3 %}
+                                                <span class="tag">+{{ row|get_item:field.name|length|add:"-3" }}</span>
+                                            {% endif %}
+                                        {% else %}
+                                            {{ row|get_item:field.name }}
+                                        {% endif %}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="{{ second_model.fields|length }}" style="text-align: center; padding: 30px; color: #aaa;">
+                                Нет данных для отображения
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    <script>
+        // Функция для обновления выбора полей
+        function updateFieldSelection() {
+            const checkedFields = document.querySelectorAll('.field-selector:checked');
+            const countElement = document.getElementById('selected-fields-count');
+            const connectButton = document.getElementById('connect-button');
+            
+            // Обновляем счетчик
+            if (countElement) {
+                countElement.textContent = checkedFields.length;
+            }
+            
+            // Показываем/скрываем кнопку "Соединить"
+            if (connectButton) {
+                if (checkedFields.length > 0) {
+                    connectButton.classList.add('show');
+                    // Плавная анимация появления
+                    connectButton.style.opacity = '0';
+                    connectButton.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        connectButton.style.transition = 'all 0.3s ease';
+                        connectButton.style.opacity = '1';
+                        connectButton.style.transform = 'translateY(0)';
+                    }, 10);
+                } else {
+                    // Плавно скрываем кнопку
+                    connectButton.style.transition = 'all 0.3s ease';
+                    connectButton.style.opacity = '0';
+                    connectButton.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        connectButton.classList.remove('show');
+                    }, 300);
+                }
+            }
+            
+            // Визуальная обратная связь для заголовков
+            document.querySelectorAll('.field-selector').forEach(checkbox => {
+                const label = checkbox.nextElementSibling;
+                if (checkbox.checked) {
+                    label.style.color = '#4CAF50';
+                    label.style.fontWeight = 'bold';
+                } else {
+                    label.style.color = '#aaa';
+                    label.style.fontWeight = 'normal';
+                }
+            });
+        }
+
+        // Функция для отображения/скрытия второго блока селекторов
+        function toggleSecondSelector() {
+            const secondSelector = document.getElementById('second-selector');
+            
+            // Показываем второй блок
+            secondSelector.style.display = 'block';
+            
+            // Плавная анимация появления
+            secondSelector.style.opacity = '0';
+            secondSelector.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                secondSelector.style.transition = 'all 0.3s ease';
+                secondSelector.style.opacity = '1';
+                secondSelector.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Прокручиваем к блоку
+            secondSelector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Функция для обновления выбора полей второй таблицы
+        function updateSecondFieldSelection() {
+            // Визуальная обратная связь для заголовков
+            document.querySelectorAll('.second-field-selector').forEach(checkbox => {
+                const label = checkbox.nextElementSibling;
+                if (checkbox.checked) {
+                    label.style.color = '#4CAF50';
+                    label.style.fontWeight = 'bold';
+                } else {
+                    label.style.color = '#aaa';
+                    label.style.fontWeight = 'normal';
+                }
+            });
+        }
+
+        // Функция для обработки изменения выбора базы данных второй таблицы
+        function onSecondDatabaseChange() {
+            // Если second_model не выбран, просто обновляем отображение без отправки формы
+            const secondModelSelect = document.querySelector('select[name="second_model"]');
+            const currentSecondModel = secondModelSelect.value;
+            
+            if (!currentSecondModel) {
+                // Просто обновляем отображение базы данных
+                console.log('База данных изменена, но модель не выбрана');
+                return;
+            }
+            
+            // Обновляем скрытое поле temp_second_model
+            const tempField = document.querySelector('input[name="temp_second_model"]');
+            if (tempField && currentSecondModel) {
+                tempField.value = currentSecondModel;
+            }
+            
+            // Отправляем форму
+            document.getElementById('second-selectors-form').submit();
+        }
+
+        // Функция для обработки изменения выбора второй модели
+        function onSecondModelChange() {
+            // Просто обновляем форму для отправки
+            document.getElementById('second-selectors-form').submit();
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFieldSelection();
+            
+            // Добавляем стили для тегов
+            const style = document.createElement('style');
+            style.textContent = `
+                .tag {
+                    display: inline-block;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 2px 6px;
+                    margin: 1px;
+                    border-radius: 3px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html> 
