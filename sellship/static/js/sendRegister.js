@@ -142,6 +142,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Восстанавливаем состояние из URL
     restoreStateFromURL();
 
+    // Если нет хэша в URL, устанавливаем статус "Куплено" по умолчанию
+    if (!getActionFromHash()) {
+        switchFormStatus('form-buy', false);
+    } else {
+        // Если есть хэш, устанавливаем активный класс на соответствующую кнопку
+        const action = getActionFromHash();
+        if (action && STATUS_TYPES.includes(action)) {
+            const activeButton = document.querySelector(`[data-option="${action}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+    }
+
     // Обработчик изменения хэша в URL
     window.addEventListener('hashchange', function() {
         restoreStateFromURL();
@@ -518,6 +532,9 @@ document.addEventListener('DOMContentLoaded', function() {
             list.style.display = 'none';
             list.style.visibility = 'hidden';
         }
+
+        // Сбросить статус на "Куплено" и переключить на соответствующую вкладку
+        switchFormStatus('form-buy', false);
     });
 });
 

@@ -47,13 +47,13 @@ class EbayShippingInfoForm(forms.ModelForm):
     )
 
     seller_name = forms.CharField(
+        required=False,
         widget=forms.TextInput(
             attrs={
                 'type': 'text',
                 'placeholder': 'имя продавца',
             }
-        ),
-        required=True
+        )
     )
 
     number_announcement = forms.IntegerField(
@@ -99,6 +99,7 @@ class EbayShippingInfoForm(forms.ModelForm):
     )
 
     overhead = forms.FloatField(
+        initial=0,
         widget=forms.NumberInput(
             attrs={
                 'type': 'text',

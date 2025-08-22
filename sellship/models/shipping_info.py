@@ -59,7 +59,7 @@ class EbayShippingInfo(models.Model):
     account_ebay = models.CharField(choices=AccountEbayChoices.choices, null=False, db_column="аккаунт_ебей", default=AccountEbayChoices.kensinerjack, verbose_name="Аккаунт eBay")
     status = models.CharField(max_length=9, choices=StatusType.choices, null=False, db_column="статус", default=StatusType.PURCHASED, verbose_name="Статус")
     last_updated_status = models.DateTimeField(default=timezone.now, db_column="последнее_обновление_статуса", null=True, blank=True, verbose_name="Последнее обновление статуса")
-    seller_name = models.CharField(max_length=100, db_column="имя_продавца", verbose_name="Имя продавца")
+    seller_name = models.CharField(max_length=100, db_column="имя_продавца", verbose_name="Имя продавца", null=True, blank=True)
     shipping_type = models.CharField(max_length=5, choices=ShippingType.choices, null=False, db_column="тип_доставки", default=ShippingType.AIR, verbose_name="Тип доставки")
     final_price = models.FloatField(db_column="финальная_цена", verbose_name="Финальная цена")
     overhead = models.FloatField(default=0, db_column="дополнительные_затраты", verbose_name="Дополнительные затраты")
