@@ -113,8 +113,6 @@ def sendRegister_view(request):
         form = EbayShippingInfoForm(request.POST)
         if form.is_valid():
             shipping_info = form.save()
-            # shipping_info.smart = smart_item
-            # shipping_info.save()
             messages.success(request, 'Данные успешно сохранены!')
             return redirect('sendRegister')
         else:

@@ -6,7 +6,19 @@ from .models.shipping_info import ShipperChoices, ShippingType, AccountEbayChoic
 class EbayShippingInfoForm(forms.ModelForm):
     smart = forms.ModelChoiceField(
         queryset=Item.objects.all(),
-        widget=forms.HiddenInput()
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                'id': 'autoArticleComplete',
+                'placeholder': 'Начни вводить артикул...',
+                'class': 'smart-input',
+                'autocomplete': 'off'
+            }
+        ),
+        error_messages={
+            'required': 'Поле "Артикул" обязательно для заполнения.',
+            'invalid_choice': 'Товар с таким артикулом не найден.'
+        }
     )
 
     priority = forms.ChoiceField(

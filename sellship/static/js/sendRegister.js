@@ -214,24 +214,24 @@ function renderList(items) {
     // Создаем структуру для отображения данных
     if (typeof item === 'string') {
       div.innerHTML = `<span class="article-text">${item}</span>`;
+      div.dataset.id = item;
     } else if (item.similar_article) {
       div.innerHTML = `
         <span class="article-text">${item.similar_article}</span>
         <span class="article-id">ID: ${item.id}</span>
       `;
+      div.dataset.id = item.id;
     } else {
       div.innerHTML = `
         <span class="article-text">Артикул</span>
         <span class="article-id">ID: ${item.id}</span>
       `;
-    }
-
-    if (typeof item !== 'string') {
       div.dataset.id = item.id;
     }
 
     div.addEventListener('click', () => {
-      input.value = div.dataset.id || item;
+      // Устанавливаем ID товара в поле smart для ModelChoiceField
+      input.value = div.dataset.id;
       closeList();
     });
 
@@ -366,6 +366,8 @@ function initFloatingLabels() {
         }
     });
 }
+
+
 
 // Кастомная валидация для полей, Regex береться из формочки Django и подставляеться тут
 document.addEventListener('DOMContentLoaded', function () {

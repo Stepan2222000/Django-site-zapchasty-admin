@@ -50,9 +50,10 @@
 
 <!--        Умный поиск по запросу-->
                 <div class="auto-complete-container">
-                    <input type="text" id="autoArticleComplete" placeholder="Начни вводить артикул..." autocomplete="off" name="smart" value="{{ form.smart.value|default:'' }}" /> <!-- Так как тут кастомное поле мы берем только его значения из Django формы-->
+                    {{ form.smart }}
                     <div id="autoArticleComplete-list"></div>
                 </div>
+                {{ form.smart.errors }}
 <!--        Умный поиск по запросу-->
 
 
