@@ -78,12 +78,12 @@
 
         <p>Выберите статус</p>
         <div class="status-buttons-container">
-            <button type="button" class="status-button active" data-option="form-buy">Куплено</button>
+            <button type="button" class="status-button" data-option="form-buy">Куплено</button>
             <button type="button" class="status-button" data-option="form-massage">Написал</button>
             <button type="button" class="status-button" data-option="form-offer">Оффер</button>
         </div>
         <!--внутри purchase-ebay-form после кнопок-->
-        <div id="form-buy" class="status-form">
+        <div id="form-buy" class="status-form hide-form">
             <div class="floating-label-container">
                 {{ form.track_number }}
                 <label for="{{ form.track_number.id_for_label }}" class="floating-label">Трек номер</label>
@@ -211,7 +211,7 @@
             </div>
             <div class="button-right">
                 <a href="{% url 'items' %}" class="btn btn-cancel">Отмена</a>
-                <button class="btn" type="submit">{% if is_edit %}Сохранить{% else %}Сохранить{% endif %}</button>
+                <button class="btn" type="submit">{% if is_edit %}Сохранить{% else %}Отправить{% endif %}</button>
             </div>
         </div>
     </form>

@@ -3,10 +3,11 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
+from django.db import models
 
 from sellship.forms import EbayShippingInfoForm
 from sellship.models import Item
-from sellship.models.shipping_info import EbayShippingInfo, StatusType, CountryChoices, ShipperChoices
+from sellship.models.shipping_info import EbayShippingInfo, StatusType, CountryChoices, ShipperChoices, PriorityChoices
 
 
 # from sellship.models import ShipperChoices, AccountEbayChoices
@@ -73,19 +74,30 @@ def items_view(request):
     if status_filter:
         shipping_items = shipping_items.filter(status=status_filter)
     
-    # Сортировка по приоритету (последнее обновление статуса)
+    # Сортировка по приоритету
     if priority_filter == 'high':
-        shipping_items = shipping_items.order_by('-last_updated_status')
+        shipping_items = shipping_items.filter(priority='high')
     elif priority_filter == 'medium':
-        shipping_items = shipping_items.order_by('last_updated_status')
+        shipping_items = shipping_items.filter(priority='medium')
     elif priority_filter == 'low':
-        shipping_items = shipping_items.order_by('last_updated_status')
+        shipping_items = shipping_items.filter(priority='low')
+    
+    # Сортировка по приоритету (high -> medium -> low)
+    priority_order = models.Case(
+        models.When(priority='high', then=models.Value(1)),
+        models.When(priority='medium', then=models.Value(2)),
+        models.When(priority='low', then=models.Value(3)),
+        default=models.Value(4),
+        output_field=models.IntegerField(),
+    )
+    shipping_items = shipping_items.order_by(priority_order, '-last_updated_status')
     
     context = {
         'shipping_items': shipping_items,
         'countries': CountryChoices.choices,
         'shippers': ShipperChoices.choices,
         'statuses': StatusType.choices,
+        'priorities': PriorityChoices.choices,
         'current_filters': {
             'country': country_filter,
             'shipper': shipper_filter,

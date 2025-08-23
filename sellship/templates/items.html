@@ -87,12 +87,10 @@
                 <span class="filter-label">Приоритет</span>
                 <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}{% endif %}" 
                    class="filter-btn {% if not current_filters.priority %}active{% endif %}">Все</a>
-                <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}{% endif %}&priority=high" 
-                   class="filter-btn {% if current_filters.priority == 'high' %}active{% endif %}">Высокий</a>
-                <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}{% endif %}&priority=medium" 
-                   class="filter-btn {% if current_filters.priority == 'medium' %}active{% endif %}">Средний</a>
-                <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}{% endif %}&priority=low" 
-                   class="filter-btn {% if current_filters.priority == 'low' %}active{% endif %}">Низкий</a>
+                {% for priority_key, priority_value in priorities %}
+                <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}{% endif %}&priority={{ priority_key }}" 
+                   class="filter-btn {% if current_filters.priority == priority_key %}active{% endif %}">{{ priority_value }}</a>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -119,7 +117,7 @@
                     <td>Ebay</td>
                     <td>{{ item.pk }}</td>
                     <td>{{ item.get_status_display }}</td>
-                    <td>{{ current_filters.priority|default:"Все" }}</td>
+                    <td>{{ item.get_priority_display }}</td>
                     <td>
                         <a href="{% url 'delete_shipping_item' item.pk %}" class="btn-action btn-delete">🗑️ Удалить</a>
                     </td>
