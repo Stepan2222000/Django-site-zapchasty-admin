@@ -55,7 +55,7 @@ class EbayShippingInfoForm(forms.ModelForm):
                 'data-pattern': '^[0-9]{12}$'
             }
         ),
-        required=True
+        required=False
     )
 
     seller_name = forms.CharField(
@@ -77,7 +77,8 @@ class EbayShippingInfoForm(forms.ModelForm):
                 'max': '999999999999',
                 'data-pattern': '^[0-9]{12}$'
             }
-        )
+        ),
+        required=False
     )
 
     max_price = forms.DecimalField(
@@ -89,7 +90,7 @@ class EbayShippingInfoForm(forms.ModelForm):
                 'data-pattern': '^[0-9]{12}$'
             }
         ),
-        required = False
+        required=False
     )
 
     track_number = forms.CharField(
@@ -119,7 +120,8 @@ class EbayShippingInfoForm(forms.ModelForm):
                 'step': '0.01',
                 'data-pattern': '^[0-9]{12}$'
             }
-        )
+        ),
+        required=False
     )
 
 

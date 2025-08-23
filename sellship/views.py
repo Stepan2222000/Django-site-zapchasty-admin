@@ -21,7 +21,23 @@ def edit_shipping_item(request, item_id):
     if request.method == 'POST':
         form = EbayShippingInfoForm(request.POST, instance=shipping_item)
         if form.is_valid():
-            form.save()
+            # Создаем экземпляр формы, но не сохраняем
+            updated_item = form.save(commit=False)
+            
+            # Если статус "Написал" или "Оффер", устанавливаем значения по умолчанию для необязательных полей
+            if updated_item.status in ['НАПИСАЛИ', 'ОФФЕР']:
+                if not updated_item.final_price:
+                    updated_item.final_price = 0
+                if not updated_item.overhead:
+                    updated_item.overhead = 0
+                if not updated_item.track_number:
+                    updated_item.track_number = ''
+                if not updated_item.seller_name:
+                    updated_item.seller_name = ''
+                if not updated_item.order_link:
+                    updated_item.order_link = ''
+            
+            updated_item.save()
             messages.success(request, f'Запись #{item_id} успешно обновлена!')
             return redirect('items')
         else:
@@ -112,9 +128,25 @@ def sendRegister_view(request):
     if request.method == 'POST':
         form = EbayShippingInfoForm(request.POST)
         if form.is_valid():
-            shipping_info = form.save()
+            # Создаем экземпляр формы, но не сохраняем
+            shipping_info = form.save(commit=False)
+            
+            # Если статус "Написал" или "Оффер", устанавливаем значения по умолчанию для необязательных полей
+            if shipping_info.status in ['НАПИСАЛИ', 'ОФФЕР']:
+                if not shipping_info.final_price:
+                    shipping_info.final_price = 0
+                if not shipping_info.overhead:
+                    shipping_info.overhead = 0
+                if not shipping_info.track_number:
+                    shipping_info.track_number = ''
+                if not shipping_info.seller_name:
+                    shipping_info.seller_name = ''
+                if not shipping_info.order_link:
+                    shipping_info.order_link = ''
+            
+            shipping_info.save()
             messages.success(request, 'Данные успешно сохранены!')
-            return redirect('sendRegister')
+            return redirect('items')
         else:
             messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     else:

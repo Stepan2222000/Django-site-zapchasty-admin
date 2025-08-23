@@ -80,10 +80,89 @@ function switchFormStatus(statusType, updateHash = true) {
         submitButton.style.display = 'inline-flex';
     }
     
+    // Управляем обязательностью полей в зависимости от статуса
+    updateFieldRequirements(statusType);
+    
     // Обновляем URL с хэшем только если это не восстановление из URL
     if (updateHash) {
         updateURLHash(statusType);
     }
+}
+
+// Функция для обновления обязательности полей в зависимости от статуса
+function updateFieldRequirements(statusType) {
+    const form = document.getElementById('purchase-ebay-form');
+    if (!form) return;
+    
+    // Поля, которые становятся необязательными при статусе "Написал" или "Оффер"
+    const optionalFields = [
+        'track_number',
+        'date_arrive', 
+        'final_price',
+        'seller_name',
+        'shipping_type',
+        'account_ebay',
+        'overhead',
+        'order_link',
+        'currency'
+    ];
+    
+    if (statusType === 'form-massage' || statusType === 'form-offer') {
+        // При статусе "Написал" или "Оффер" делаем поля необязательными
+        optionalFields.forEach(fieldName => {
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                field.removeAttribute('required');
+                // Убираем красную рамку если поле было помечено как обязательное
+                field.style.borderColor = '';
+                // Убираем сообщения об ошибках
+                const errorElement = field.parentNode.querySelector('.errorlist');
+                if (errorElement) {
+                    errorElement.remove();
+                }
+            }
+        });
+        
+        // Автоматически заполняем поля значениями по умолчанию
+        setDefaultValues();
+    } else {
+        // При статусе "Куплено" возвращаем обязательность для критичных полей
+        const criticalFields = ['final_price', 'shipper', 'order_link'];
+        criticalFields.forEach(fieldName => {
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                field.setAttribute('required', 'required');
+            }
+        });
+    }
+}
+
+// Функция для установки значений по умолчанию
+function setDefaultValues() {
+    const form = document.getElementById('purchase-ebay-form');
+    if (!form) return;
+    
+    // Устанавливаем значения по умолчанию для необязательных полей
+    const defaultValues = {
+        'final_price': '0',
+        'overhead': '0',
+        'track_number': '',
+        'seller_name': '',
+        'order_link': ''
+    };
+    
+    Object.entries(defaultValues).forEach(([fieldName, defaultValue]) => {
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        if (field && !field.value.trim()) {
+            field.value = defaultValue;
+            
+            // Обновляем состояние плавающего label
+            const container = field.closest('.floating-label-container');
+            if (container && defaultValue !== '') {
+                container.classList.add('has-value');
+            }
+        }
+    });
 }
 
 // Map between tab ids and status values expected by backend
@@ -131,6 +210,8 @@ function restoreStateFromURL() {
     const action = getActionFromHash();
     if (action && STATUS_TYPES.includes(action)) {
         switchFormStatus(action, false); // Не обновляем хэш при восстановлении
+        // Устанавливаем правильную обязательность полей для восстановленного статуса
+        updateFieldRequirements(action);
     }
 }
 
@@ -153,6 +234,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (activeButton) {
                 activeButton.classList.add('active');
             }
+            // Устанавливаем правильную обязательность полей для восстановленного статуса
+            updateFieldRequirements(action);
         }
     }
 
@@ -537,6 +620,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Сбросить статус на "Куплено" и переключить на соответствующую вкладку
         switchFormStatus('form-buy', false);
+        
+        // Восстановить обязательность полей для статуса "Куплено"
+        updateFieldRequirements('form-buy');
     });
 });
 
