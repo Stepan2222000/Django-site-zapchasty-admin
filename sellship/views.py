@@ -15,8 +15,8 @@ from sellship.models.shipping_info import EbayShippingInfo, StatusType, CountryC
 
 # Create your views here.
 
-def edit_shipping_item(request, item_id):
-    shipping_item = get_object_or_404(EbayShippingInfo, pk=item_id)
+def edit_shipping_item(request, pk):
+    shipping_item = get_object_or_404(EbayShippingInfo, pk=pk)
     
     if request.method == 'POST':
         form = EbayShippingInfoForm(request.POST, instance=shipping_item)
@@ -38,7 +38,7 @@ def edit_shipping_item(request, item_id):
                     updated_item.order_link = ''
             
             updated_item.save()
-            messages.success(request, f'Запись #{item_id} успешно обновлена!')
+            messages.success(request, f'Запись #{pk} успешно обновлена!')
             return redirect('items')
         else:
             messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
