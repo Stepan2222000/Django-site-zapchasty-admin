@@ -88,16 +88,41 @@ DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
 DATABASE_HOST = os.getenv('DATABASE_HOST')
 DATABASE_PORT = os.getenv('DATABASE_PORT')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': DATABASE_NAME,       # ← Название базы данных
-        'USER': DATABASE_USER,       # ← Имя пользователя PostgreSQL
-        'PASSWORD': DATABASE_PASSWORD,        # ← Пароль
-        'HOST': DATABASE_HOST,                # ← Или IP-адрес (например, '127.0.0.1')
-        'PORT': DATABASE_PORT,                     # ← Стандартный порт PostgreSQL
+DATABASE_COUNT = int(os.getenv('DATABASE_COUNT', '1'))
+
+def read_db_config_by_index(index: int):
+    """Читает конфиг БД из переменных окружения с индексами.
+    Для index == 1 сохраняем обратную совместимость: берём без индекса как fallback.
+    Поддерживаем переменные: DATABASE_ENGINE_i, DATABASE_NAME_i, DATABASE_USER_i,
+    DATABASE_PASSWORD_i, DATABASE_HOST_i, DATABASE_PORT_i.
+    """
+    def get_env_indexed(key: str, fallback: str | None = None):
+        value = os.getenv(f"DATABASE_{key}_{index}")
+        if value is not None:
+            return value
+        # fallback только для первого индекса — берём неиндексированные значения
+        if index == 1:
+            return os.getenv(f"DATABASE_{key}", fallback)
+        return fallback
+
+    return {
+        'ENGINE': get_env_indexed('ENGINE', 'django.db.backends.postgresql'),
+        'NAME': get_env_indexed('NAME', DATABASE_NAME if index == 1 else None),
+        'USER': get_env_indexed('USER', DATABASE_USER if index == 1 else None),
+        'PASSWORD': get_env_indexed('PASSWORD', DATABASE_PASSWORD if index == 1 else None),
+        'HOST': get_env_indexed('HOST', DATABASE_HOST if index == 1 else None),
+        'PORT': get_env_indexed('PORT', DATABASE_PORT if index == 1 else None),
     }
-}
+
+DATABASES = {}
+for i in range(1, max(1, DATABASE_COUNT) + 1):
+    config = read_db_config_by_index(i)
+    if i == 1:
+        alias = 'default'
+    else:
+        # Имя алиаса берём из имени БД, если задано, иначе fallback к db{index}
+        alias = (config.get('NAME') or f'db{i}')
+    DATABASES[alias] = config
 
 
 # Password validation
