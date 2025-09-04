@@ -3,10 +3,10 @@ from django.db import models
 from django.db.models.fields import CharField
 from django.utils import timezone
 
-
-class Market(models.Model):
-    name = models.CharField(max_length=100)
-    link = models.URLField(max_length=250)
+#
+# class Market(models.Model):
+#     name = models.CharField(max_length=100)
+#     link = models.URLField(max_length=250)
 
 
 
