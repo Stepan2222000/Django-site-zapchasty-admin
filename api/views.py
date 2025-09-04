@@ -1,6 +1,8 @@
 from django.db.models.expressions import RawSQL
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 from sellship.models import Item
 
@@ -68,3 +70,40 @@ def articles_view(request):
         item.pop("priority")
 
     return JsonResponse(sorted_result, safe=False)
+
+
+@csrf_exempt
+def validate_item_view(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Only POST is allowed')
+
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest('Invalid JSON')
+
+    # Разрешаем валидировать только subset полей, которые пришли
+    # Создаём экземпляр без сохранения и валидируем только переданные поля
+    item_field_names = {f.name for f in Item._meta.get_fields() if hasattr(f, 'attname')}
+
+    # Оставляем только известные поля модели
+    data = {k: v for k, v in payload.items() if k in item_field_names}
+
+    item = Item()
+    for field_name, value in data.items():
+        setattr(item, field_name, value)
+
+    # Исключаем все поля, которых нет во входных данных — чтобы не срабатывали проверки required
+    exclude_fields = [name for name in item_field_names if name not in data]
+
+    try:
+        # validate_unique=False, так как мы не создаём запись и не проверяем уникальность по БД
+        item.full_clean(exclude=exclude_fields, validate_unique=False)
+        return JsonResponse({"valid": True, "errors": {}})
+    except Exception as exc:
+        # Собираем ошибки в удобный формат
+        if hasattr(exc, 'message_dict'):
+            errors = exc.message_dict
+        else:
+            errors = {"non_field_errors": [str(exc)]}
+        return JsonResponse({"valid": False, "errors": errors}, status=400)
