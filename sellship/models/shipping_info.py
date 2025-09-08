@@ -53,7 +53,7 @@ class PriorityChoices(models.TextChoices):
 
 class EbayShippingInfo(models.Model):
     number_announcement = models.BigIntegerField(validators=[MinValueValidator(100000000000), MaxValueValidator(999999999999)], db_column="номер_объявления", verbose_name="Номер объявления")
-    smart = models.ForeignKey("Item", on_delete=models.CASCADE, db_column='smart', verbose_name="Товар")
+    smart = models.ForeignKey("ItemFDW", on_delete=models.CASCADE, db_column='smart', verbose_name="Товар", db_constraint=False)
     max_price = models.IntegerField(blank=True, db_column="максимальная_цена", verbose_name="Максимальная цена", default=0, null=True)
     priority = models.CharField(default=PriorityChoices.LOW, choices=PriorityChoices.choices, verbose_name="Приоритет", db_column="приоритет")
     account_ebay = models.CharField(choices=AccountEbayChoices.choices, null=False, db_column="аккаунт_ебей", default=AccountEbayChoices.kensinerjack, verbose_name="Аккаунт eBay")

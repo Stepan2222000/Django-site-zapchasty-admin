@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404
 from django.db import models
 
 from sellship.forms import EbayShippingInfoForm
-from sellship.models import Item
 from sellship.models.shipping_info import EbayShippingInfo, StatusType, CountryChoices, ShipperChoices, PriorityChoices
 
 
@@ -77,7 +76,9 @@ def items_view(request):
     priority_filter = request.GET.get('priority')
     
     # Базовый QuerySet
-    shipping_items = EbayShippingInfo.objects.all().select_related('smart')
+    # НЕЛЬЗЯ делать select_related('smart'): ItemFDW живёт в другой БД (parts_admin)
+    # и Django не поддерживает cross-DB join. Оставляем ленивую загрузку по FK.
+    shipping_items = EbayShippingInfo.objects.all()
     
     # Применяем фильтры
     if country_filter:

@@ -1,11 +1,11 @@
 from django import forms
-from .models import EbayShippingInfo, CountryChoices, Item
+from django.core.exceptions import ValidationError
+from .models import EbayShippingInfo, CountryChoices, ItemFDW
 from .models.shipping_info import ShipperChoices, ShippingType, AccountEbayChoices
 
 
 class EbayShippingInfoForm(forms.ModelForm):
-    smart = forms.ModelChoiceField(
-        queryset=Item.objects.all(),
+    smart = forms.CharField(
         required=True,
         widget=forms.TextInput(
             attrs={
@@ -17,7 +17,6 @@ class EbayShippingInfoForm(forms.ModelForm):
         ),
         error_messages={
             'required': 'Поле "Артикул" обязательно для заполнения.',
-            'invalid_choice': 'Товар с таким артикулом не найден.'
         }
     )
 
@@ -128,3 +127,21 @@ class EbayShippingInfoForm(forms.ModelForm):
     class Meta:
         model = EbayShippingInfo
         fields = "__all__"
+
+    def clean_smart(self):
+        raw_value = self.cleaned_data.get('smart', '')
+        if raw_value is None:
+            raise ValidationError('Поле "Артикул" обязательно для заполнения.')
+
+        value = str(raw_value).strip()
+
+        # Try to extract ID if value looks like "<id> | ..."
+        if '|' in value:
+            value = value.split('|', 1)[0].strip()
+
+        # Try lookup by primary key (smart id)
+        item = ItemFDW.objects.filter(id=value).first()
+        if item:
+            return item
+
+        raise ValidationError('Товар с таким артикулом не найден.')
