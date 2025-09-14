@@ -3,10 +3,10 @@ name: Django Zapcasti
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -15,10 +15,9 @@ jobs:
       - name: Deploy to Server
         run: |
           cd /root/Django-site-zapchasty-admin
-          git checkout main
+          git checkout master
           git fetch && git pull
 
           source ./venv/bin/activate
           python manage.py makemigrations && python manage.py migrate
           sudo systemctl restart zapchasty_admin
-          
