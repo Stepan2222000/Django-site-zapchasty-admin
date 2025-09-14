@@ -110,6 +110,19 @@ def validate_item_view(request):
         return JsonResponse({"valid": False, "errors": errors}, status=400)
 
 
+def get_db_column_mapping(model_class):
+    """
+    Создает маппинг db_column -> field_name для модели.
+    Если db_column не указан, используется имя поля.
+    """
+    mapping = {}
+    for field in model_class._meta.get_fields():
+        if hasattr(field, 'attname'):
+            db_column = getattr(field, 'db_column', None) or field.name
+            mapping[db_column] = field.name
+    return mapping
+
+
 @csrf_exempt
 def validate_all_view(request):
     if request.method != 'POST':
@@ -120,13 +133,25 @@ def validate_all_view(request):
     except json.JSONDecodeError:
         return HttpResponseBadRequest('Invalid JSON')
 
-    # Получаем поля обеих моделей
-    item_field_names = {f.name for f in Item._meta.get_fields() if hasattr(f, 'attname')}
-    shipping_field_names = {f.name for f in EbayShippingInfo._meta.get_fields() if hasattr(f, 'attname')}
+    # Получаем маппинги db_column -> field_name для обеих моделей
+    item_db_mapping = get_db_column_mapping(Item)
+    shipping_db_mapping = get_db_column_mapping(EbayShippingInfo)
     
-    # Разделяем поля по моделям
-    item_data = {k: v for k, v in payload.items() if k in item_field_names}
-    shipping_data = {k: v for k, v in payload.items() if k in shipping_field_names}
+    # Получаем все возможные db_column имена для фильтрации
+    item_db_columns = set(item_db_mapping.keys())
+    shipping_db_columns = set(shipping_db_mapping.keys())
+    
+    # Разделяем поля по моделям, используя db_column
+    item_data = {}
+    shipping_data = {}
+    
+    for db_column, value in payload.items():
+        if db_column in item_db_columns:
+            field_name = item_db_mapping[db_column]
+            item_data[field_name] = value
+        elif db_column in shipping_db_columns:
+            field_name = shipping_db_mapping[db_column]
+            shipping_data[field_name] = value
     
     all_errors = {}
     
@@ -136,13 +161,24 @@ def validate_all_view(request):
         for field_name, value in item_data.items():
             setattr(item, field_name, value)
         
+        # Получаем все имена полей модели Item для исключения
+        item_field_names = {f.name for f in Item._meta.get_fields() if hasattr(f, 'attname')}
         exclude_item_fields = [name for name in item_field_names if name not in item_data]
         
         try:
             item.full_clean(exclude=exclude_item_fields, validate_unique=False)
         except Exception as exc:
             if hasattr(exc, 'message_dict'):
-                all_errors.update({f"item_{k}": v for k, v in exc.message_dict.items()})
+                # Преобразуем ошибки обратно к db_column для ответа
+                for field_name, errors in exc.message_dict.items():
+                    # Находим соответствующий db_column для field_name
+                    db_column = None
+                    for db_col, f_name in item_db_mapping.items():
+                        if f_name == field_name:
+                            db_column = db_col
+                            break
+                    error_key = f"item_{db_column}" if db_column else f"item_{field_name}"
+                    all_errors[error_key] = errors
             else:
                 all_errors["item_non_field_errors"] = [str(exc)]
     
@@ -152,21 +188,38 @@ def validate_all_view(request):
         for field_name, value in shipping_data.items():
             setattr(shipping, field_name, value)
         
+        # Получаем все имена полей модели EbayShippingInfo для исключения
+        shipping_field_names = {f.name for f in EbayShippingInfo._meta.get_fields() if hasattr(f, 'attname')}
         exclude_shipping_fields = [name for name in shipping_field_names if name not in shipping_data]
         
         try:
             shipping.full_clean(exclude=exclude_shipping_fields, validate_unique=False)
         except Exception as exc:
             if hasattr(exc, 'message_dict'):
-                all_errors.update({f"shipping_{k}": v for k, v in exc.message_dict.items()})
+                # Преобразуем ошибки обратно к db_column для ответа
+                for field_name, errors in exc.message_dict.items():
+                    # Находим соответствующий db_column для field_name
+                    db_column = None
+                    for db_col, f_name in shipping_db_mapping.items():
+                        if f_name == field_name:
+                            db_column = db_col
+                            break
+                    error_key = f"shipping_{db_column}" if db_column else f"shipping_{field_name}"
+                    all_errors[error_key] = errors
             else:
                 all_errors["shipping_non_field_errors"] = [str(exc)]
     
     # Проверяем связь между моделями, если есть поля для связи
-    if item_data and shipping_data and 'smart' in shipping_data:
-        # Если указан smart в shipping_data, проверяем что такой Item существует
-        smart_id = shipping_data.get('smart')
-        if smart_id and not Item.objects.filter(id=smart_id).exists():
+    # Ищем поле smart в payload (может прийти как db_column)
+    smart_value = None
+    for db_column, value in payload.items():
+        if db_column in ['smart'] or (db_column in shipping_db_mapping and shipping_db_mapping[db_column] == 'smart'):
+            smart_value = value
+            break
+    
+    if item_data and shipping_data and smart_value:
+        # Проверяем что такой Item существует
+        if smart_value and not Item.objects.filter(id=smart_value).exists():
             all_errors["shipping_smart"] = ["Указанный Item не существует"]
     
     if all_errors:
