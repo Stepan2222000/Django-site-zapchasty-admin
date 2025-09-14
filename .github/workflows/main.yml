@@ -17,4 +17,8 @@ jobs:
           cd /root/Django-site-zapchasty-admin
           git checkout main
           git fetch && git pull
+
+          source ./venv/bin/activate
+          python manage.py makemigrations && python manage.py migrate
           sudo systemctl restart zapchasty_admin
+          
