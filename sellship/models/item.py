@@ -15,6 +15,7 @@ class Brand(models.TextChoices):
     QUICKSILVER = 'QUICKSILVER', 'QUICKSILVER'
     MERCRUISER = 'MERCRUISER', 'MERCRUISER'
     MERCURY = 'MERCURY', 'MERCURY'
+    HONDA = 'HONDA', 'HONDA'
 
 
 class TransportType(models.TextChoices):
