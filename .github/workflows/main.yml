@@ -1,0 +1,20 @@
+name: Django Zapcasti
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy to Server
+        run: |
+          cd /root/Django-site-zapchasty-admin
+          git checkout main
+          git fetch && git pull
+          sudo systemctl restart zapchasty_admin
