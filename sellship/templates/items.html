@@ -8,9 +8,17 @@
     <link rel="stylesheet" href="/static/css/items.css">
 </head>
 <body>
-    <h1>Управление отправками</h1>
-    
-    <!-- Переключатель темы -->
+    <!-- Декоративный фон для эффекта стекла -->
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="content-wrapper">
+        <h1>Управление отправками</h1>
+
+        <!-- Переключатель темы -->
     <div class="theme-switcher">
         <button id="theme-toggle" class="theme-btn">
             <span class="theme-icon">🌙</span>
@@ -133,6 +141,8 @@
         </table>
     </div>
     
+    </div> <!-- End content-wrapper -->
+
     <script>
         // Функция для перехода к форме редактирования при клике на строку
         document.querySelectorAll('.items-table tbody tr').forEach(row => {
