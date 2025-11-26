@@ -1,15 +1,41 @@
-
+import logging
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-from django.db import models
+from django.db import models, DatabaseError, OperationalError
+from django.db.models import Q
+from django.db.models.expressions import RawSQL
 
 from sellship.forms import EbayShippingInfoForm
 from sellship.models.shipping_info import EbayShippingInfo, StatusType, CountryChoices, ShipperChoices, PriorityChoices
+from sellship.models.item_fdw import ItemFDW
+
+logger = logging.getLogger(__name__)
 
 
-# from sellship.models import ShipperChoices, AccountEbayChoices
+def safe_fdw_article_search(search_query: str) -> tuple[list, bool]:
+    """
+    Безопасный поиск по артикулу в ItemFDW (ArrayField).
+    Возвращает (список ID, успех). При ошибке FDW возвращает ([], False).
+    """
+    if not search_query:
+        return ([], True)
+
+    try:
+        matching_items = ItemFDW.objects.annotate(
+            match=RawSQL(
+                'EXISTS (SELECT 1 FROM unnest("артикул") AS a WHERE a ILIKE %s)',
+                [f'%{search_query}%']
+            )
+        ).filter(match=True).values_list('id', flat=True)
+        return (list(matching_items), True)
+    except (DatabaseError, OperationalError) as e:
+        logger.warning(f"FDW article search failed: {e}")
+        return ([], False)
+    except Exception as e:
+        logger.error(f"Unexpected error in FDW search: {e}")
+        return ([], False)
 
 
 # Create your views here.
@@ -74,31 +100,70 @@ def items_view(request):
     marketplace_filter = request.GET.get('marketplace')
     status_filter = request.GET.get('status')
     priority_filter = request.GET.get('priority')
-    
+
+    # Получаем параметры поиска
+    search_query = request.GET.get('search', '').strip()
+    search_type = request.GET.get('search_type', 'all')
+
     # Базовый QuerySet
-    # НЕЛЬЗЯ делать select_related('smart'): ItemFDW живёт в другой БД (parts_admin)
-    # и Django не поддерживает cross-DB join. Оставляем ленивую загрузку по FK.
     shipping_items = EbayShippingInfo.objects.all()
-    
+
     # Применяем фильтры
     if country_filter:
         shipping_items = shipping_items.filter(country=country_filter)
     if shipper_filter:
         shipping_items = shipping_items.filter(shipper=shipper_filter)
     if marketplace_filter:
-        # Пока у нас только Ebay, можем добавить логику позже
         pass
     if status_filter:
         shipping_items = shipping_items.filter(status=status_filter)
-    
-    # Сортировка по приоритету
+
+    # Фильтр по приоритету
     if priority_filter == 'high':
         shipping_items = shipping_items.filter(priority='high')
     elif priority_filter == 'medium':
         shipping_items = shipping_items.filter(priority='medium')
     elif priority_filter == 'low':
         shipping_items = shipping_items.filter(priority='low')
-    
+
+    # Применяем поиск с обработкой ошибок FDW
+    fdw_search_failed = False
+
+    if search_query:
+        if search_type == 'article':
+            matching_items_list, fdw_success = safe_fdw_article_search(search_query)
+            if fdw_success:
+                shipping_items = shipping_items.filter(smart_id__in=matching_items_list)
+            else:
+                fdw_search_failed = True
+                shipping_items = shipping_items.none()
+
+        elif search_type == 'announcement':
+            shipping_items = shipping_items.filter(
+                number_announcement__icontains=search_query
+            )
+
+        elif search_type == 'track':
+            shipping_items = shipping_items.filter(
+                track_number__icontains=search_query
+            )
+
+        else:  # 'all'
+            local_conditions = (
+                Q(number_announcement__icontains=search_query) |
+                Q(track_number__icontains=search_query)
+            )
+            matching_items_list, fdw_success = safe_fdw_article_search(search_query)
+
+            if fdw_success and matching_items_list:
+                shipping_items = shipping_items.filter(
+                    Q(smart_id__in=matching_items_list) | local_conditions
+                )
+            else:
+                if not fdw_success:
+                    fdw_search_failed = True
+                shipping_items = shipping_items.filter(local_conditions)
+
     # Сортировка по приоритету (high -> medium -> low)
     priority_order = models.Case(
         models.When(priority='high', then=models.Value(1)),
@@ -108,7 +173,7 @@ def items_view(request):
         output_field=models.IntegerField(),
     )
     shipping_items = shipping_items.order_by(priority_order, '-last_updated_status')
-    
+
     context = {
         'shipping_items': shipping_items,
         'countries': CountryChoices.choices,
@@ -121,7 +186,10 @@ def items_view(request):
             'marketplace': marketplace_filter,
             'status': status_filter,
             'priority': priority_filter,
-        }
+        },
+        'search_query': search_query,
+        'search_type': search_type,
+        'fdw_search_failed': fdw_search_failed,
     }
     return render(request, 'items.html', context)
 

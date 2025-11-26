@@ -102,7 +102,38 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Строка поиска -->
+    <div class="search-row">
+        <form method="GET" class="search-form">
+            {% if current_filters.country %}<input type="hidden" name="country" value="{{ current_filters.country }}">{% endif %}
+            {% if current_filters.shipper %}<input type="hidden" name="shipper" value="{{ current_filters.shipper }}">{% endif %}
+            {% if current_filters.marketplace %}<input type="hidden" name="marketplace" value="{{ current_filters.marketplace }}">{% endif %}
+            {% if current_filters.status %}<input type="hidden" name="status" value="{{ current_filters.status }}">{% endif %}
+            {% if current_filters.priority %}<input type="hidden" name="priority" value="{{ current_filters.priority }}">{% endif %}
+
+            <input type="text" name="search" class="search-input" placeholder="Введите запрос для поиска..." value="{{ search_query|default:'' }}">
+            <select name="search_type" class="search-select">
+                <option value="all" {% if search_type == 'all' or not search_type %}selected{% endif %}>Все</option>
+                <option value="article" {% if search_type == 'article' %}selected{% endif %}>Артикул</option>
+                <option value="announcement" {% if search_type == 'announcement' %}selected{% endif %}>Номер объявления</option>
+                <option value="track" {% if search_type == 'track' %}selected{% endif %}>Трек-номер</option>
+            </select>
+            <button type="submit" class="search-btn">Искать</button>
+            {% if search_query %}
+            <a href="?{% if current_filters.country %}country={{ current_filters.country }}&{% endif %}{% if current_filters.shipper %}shipper={{ current_filters.shipper }}&{% endif %}{% if current_filters.marketplace %}marketplace={{ current_filters.marketplace }}&{% endif %}{% if current_filters.status %}status={{ current_filters.status }}&{% endif %}{% if current_filters.priority %}priority={{ current_filters.priority }}{% endif %}" class="search-clear">Сбросить</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if fdw_search_failed %}
+    <div class="messages">
+        <div class="message warning">
+            Поиск по артикулу временно недоступен. Показаны результаты только по номеру объявления и трек-номеру.
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Таблица записей -->
     <div class="table-container">
         <table class="items-table">
