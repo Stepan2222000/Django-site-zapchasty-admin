@@ -9,7 +9,7 @@ class ItemFDW(models.Model):
     Unmanaged модель для foreign table smart из default БД через postgres_fdw.
     Используется для связи EbayShippingInfo с Item через разные БД.
     """
-    id = models.CharField(max_length=15, primary_key=True, db_column='smart', verbose_name="ID")
+    id = models.CharField(max_length=50, primary_key=True, db_column='smart', verbose_name="ID")
     name = models.CharField(max_length=100, db_column="наименование", blank=True, verbose_name="Наименование")
     originality = models.CharField(max_length=7, db_column="оригинальность", null=False, verbose_name="Оригинальность")
     brand = ArrayField(models.CharField(max_length=15, choices=Brand.choices, null=False), size=10, default=list,
