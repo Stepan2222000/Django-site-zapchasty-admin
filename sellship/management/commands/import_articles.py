@@ -73,16 +73,9 @@ class Command(BaseCommand):
         """Получить множество валидных брендов из модели"""
         return {choice[0] for choice in Brand.choices}
 
-    def get_last_smart_number(self):
-        """Получить последний номер smart_ из БД"""
-        last_item = Item.objects.filter(id__startswith='smart_').order_by('-id').first()
-        if last_item:
-            try:
-                num = int(last_item.id.replace('smart_', ''))
-                return num
-            except ValueError:
-                pass
-        return 0
+    def get_existing_articles(self):
+        """Получить множество существующих артикулов в БД"""
+        return set(Item.objects.values_list('id', flat=True))
 
     def normalize_brand(self, brand):
         """Нормализовать бренд: применить синонимы, разделить составные"""
@@ -152,9 +145,9 @@ class Command(BaseCommand):
         valid_brands = self.get_valid_brands()
         self.stdout.write(f'Валидных брендов в модели: {len(valid_brands)}')
 
-        # Получить последний номер
-        last_num = self.get_last_smart_number()
-        self.stdout.write(f'Последний smart номер в БД: {last_num}')
+        # Получить существующие артикулы из БД
+        existing_articles = self.get_existing_articles()
+        self.stdout.write(f'Существующих записей в БД: {len(existing_articles)}')
 
         # Статистика
         stats = {
@@ -164,17 +157,17 @@ class Command(BaseCommand):
             'skipped_too_long': 0,
             'skipped_invalid': 0,
             'skipped_duplicate': 0,
+            'skipped_exists_in_db': 0,
             'skipped_no_brands': 0,
             'created': 0,
             'unknown_brands': set(),
         }
 
-        # Отслеживание дубликатов
+        # Отслеживание дубликатов в файле
         seen_articles = set()
 
         # Список для bulk_create
         items_to_create = []
-        current_num = last_num
 
         # Ограничить если нужно
         if limit > 0:
@@ -185,11 +178,16 @@ class Command(BaseCommand):
             article = str(row['articulum'])
             brands_str = row['brands']
 
-            # Проверить дубликаты
+            # Проверить дубликаты в файле
             if article in seen_articles:
                 stats['skipped_duplicate'] += 1
                 continue
             seen_articles.add(article)
+
+            # Проверить существование в БД
+            if article in existing_articles:
+                stats['skipped_exists_in_db'] += 1
+                continue
 
             # Проверить валидность артикула
             is_valid, reason = self.is_valid_article(article)
@@ -210,12 +208,9 @@ class Command(BaseCommand):
                 stats['skipped_no_brands'] += 1
                 continue
 
-            # Создать запись
-            current_num += 1
-            smart_id = f'smart_{current_num:05d}'
-
+            # Создать запись (ID = артикул)
             item = Item(
-                id=smart_id,
+                id=article,
                 name='',
                 originality='OEM',
                 brand=processed_brands,
@@ -256,7 +251,8 @@ class Command(BaseCommand):
         self.stdout.write(f"Пропущено (научная нотация): {stats['skipped_scientific']}")
         self.stdout.write(f"Пропущено (слишком длинные): {stats['skipped_too_long']}")
         self.stdout.write(f"Пропущено (невалидный формат): {stats['skipped_invalid']}")
-        self.stdout.write(f"Пропущено (дубликаты): {stats['skipped_duplicate']}")
+        self.stdout.write(f"Пропущено (дубликаты в файле): {stats['skipped_duplicate']}")
+        self.stdout.write(f"Пропущено (уже есть в БД): {stats['skipped_exists_in_db']}")
         self.stdout.write(f"Пропущено (нет известных брендов): {stats['skipped_no_brands']}")
 
         if dry_run:
