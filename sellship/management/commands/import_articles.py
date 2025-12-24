@@ -74,8 +74,23 @@ class Command(BaseCommand):
         return {choice[0] for choice in Brand.choices}
 
     def get_existing_articles(self):
-        """Получить множество существующих артикулов в БД"""
-        return set(Item.objects.values_list('id', flat=True))
+        """Получить множество существующих артикулов в БД (из поля article)"""
+        existing = set()
+        for articles in Item.objects.values_list('article', flat=True):
+            if articles:
+                existing.update(articles)
+        return existing
+
+    def get_last_smart_number(self):
+        """Получить последний номер smart_ из БД"""
+        last_item = Item.objects.filter(id__startswith='smart_').order_by('-id').first()
+        if last_item:
+            try:
+                num = int(last_item.id.replace('smart_', ''))
+                return num
+            except ValueError:
+                pass
+        return 0
 
     def normalize_brand(self, brand):
         """Нормализовать бренд: применить синонимы, разделить составные"""
@@ -147,7 +162,11 @@ class Command(BaseCommand):
 
         # Получить существующие артикулы из БД
         existing_articles = self.get_existing_articles()
-        self.stdout.write(f'Существующих записей в БД: {len(existing_articles)}')
+        self.stdout.write(f'Существующих артикулов в БД: {len(existing_articles)}')
+
+        # Получить последний номер smart_
+        last_num = self.get_last_smart_number()
+        self.stdout.write(f'Последний smart номер: {last_num}')
 
         # Статистика
         stats = {
@@ -168,6 +187,7 @@ class Command(BaseCommand):
 
         # Список для bulk_create
         items_to_create = []
+        current_num = last_num
 
         # Ограничить если нужно
         if limit > 0:
@@ -208,9 +228,12 @@ class Command(BaseCommand):
                 stats['skipped_no_brands'] += 1
                 continue
 
-            # Создать запись (ID = артикул)
+            # Создать запись (ID = smart_XXXXX)
+            current_num += 1
+            smart_id = f'smart_{current_num:05d}'
+
             item = Item(
-                id=article,
+                id=smart_id,
                 name='',
                 originality='OEM',
                 brand=processed_brands,
