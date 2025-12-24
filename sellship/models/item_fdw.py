@@ -12,9 +12,9 @@ class ItemFDW(models.Model):
     id = models.CharField(max_length=50, primary_key=True, db_column='smart', verbose_name="ID")
     name = models.CharField(max_length=100, db_column="наименование", blank=True, verbose_name="Наименование")
     originality = models.CharField(max_length=7, db_column="оригинальность", null=False, verbose_name="Оригинальность")
-    brand = ArrayField(models.CharField(max_length=15, choices=Brand.choices, null=False), size=10, default=list,
+    brand = ArrayField(models.CharField(max_length=20, choices=Brand.choices, null=False), size=10, default=list,
                        db_column="бренд", verbose_name="Бренд")
-    connect_brand = ArrayField(models.CharField(max_length=15, choices=Brand.choices), size=10, default=list,
+    connect_brand = ArrayField(models.CharField(max_length=20, choices=Brand.choices), size=10, default=list,
                                db_column="коннект_бренд", blank=True, verbose_name="Коннект бренд")
     transport_type = ArrayField(models.CharField(max_length=15, choices=TransportType.choices), size=6, default=list,
                                 db_column="тип_транспорта", verbose_name="Тип транспорта")
